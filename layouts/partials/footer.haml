@@ -1,0 +1,31 @@
+.grid-x.grid-padding-x
+  .cell.shrink.show-for-medium
+    = render '/partials/copyright.*'
+  .cell.auto
+    %ul.menu.vertical.medium-horizontal
+      %li
+        %a(href="#home")
+          Home
+      %li
+        %a(href="#bio")
+          Bio
+      %li
+        %a(href="#research")
+          Research
+      %li
+        %a(href="#presentations")
+          Presentations
+      %li
+        %a(href="#coursework")
+          Course Work
+      %li
+        %a(href="#projects")
+          Projects
+      %li
+        %a(href="#teaching")
+          Teaching
+  .cell.shrink.show-for-medium
+    = render '/partials/social.*'
+.hide-for-medium
+  = render '/partials/social.*'
+  = render '/partials/copyright.*'

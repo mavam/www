@@ -1,0 +1,99 @@
+# -- components --------------------------------------------------------------
+
+# Font Awesome
+route "/assets/components/fontawesome/fonts/**/*" do
+  "/fonts/" + File.basename(item.identifier.to_s)
+end
+
+# Prism
+route "/assets/components/prismjs/themes/prism.css" do
+  "/css/" + File.basename(item.identifier.to_s)
+end
+
+# Ignore everything not mentioned so far.
+ignore "/assets/components/**/*"
+
+# -- files -------------------------------------------------------------------
+
+route "/assets/files/**/*" do
+  "/" + File.join(item.identifier.to_s.split("/")[3..-1])
+end
+
+# -- images ------------------------------------------------------------------
+
+route "/assets/images/favicon.*" do
+  "/" + File.basename(item.identifier.to_s)
+end
+
+route "/assets/images/**/*" do
+  "/" + File.join(item.identifier.to_s.split("/")[2..-1])
+end
+
+# -- JavaScript --------------------------------------------------------------
+
+# Aggregated JavaScript.
+compile "/assets/scripts/*.js.haml" do
+  filter :haml
+  filter :uglify_js
+  write "/js/" + File.basename(item.identifier.without_ext)
+end
+
+route "/assets/scripts/*.json" do
+  "/js/" + File.basename(item.identifier.to_s)
+end
+
+# -- stylesheets -------------------------------------------------------------
+
+# Ignore SCSS sources.
+ignore "/assets/stylesheets/**/_*"
+
+# SCSS.
+compile "/assets/stylesheets/**/*" do
+  filter :sass, Compass.sass_engine_options
+  write "/css/" + File.basename(item.identifier.without_ext + ".css")
+end
+
+# -- sitemap -----------------------------------------------------------------
+
+compile '/sitemap.*' do
+  filter :haml
+  filter :gzip
+  write '/sitemap.xml.gz'
+end
+
+compile '/robots.*' do
+  filter :erb
+  write '/robots.txt'
+end
+
+# -- copy as-is --------------------------------------------------------------
+
+passthrough '/CNAME'
+passthrough '/robots.txt'
+
+# -- default rules -----------------------------------------------------------
+
+compile "/**/*.{haml,md}" do
+  filters = @item.identifier.exts.map { |e| e == 'md' ? :kramdown : e.to_sym }
+  filters.each { |f| filter f }
+  layout "/default.*"
+end
+
+compile "/**/*.html" do
+  layout "/default.*"
+end
+
+compile "/**/*" do
+end
+
+route "/**/*.{haml,html,md}" do
+  if item.identifier =~ "/index.*"
+    "/index.html"
+  else
+    item.identifier.without_ext + "/index.html"
+  end
+end
+
+# -- layouts -----------------------------------------------------------------
+
+layout "/**/*", :haml

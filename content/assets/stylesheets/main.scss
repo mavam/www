@@ -1,0 +1,69 @@
+@import "settings";
+@import "foundation";
+@import "font-awesome";
+@import "motion-ui";
+
+@include foundation-everything($prototype: true);
+
+// General styling of main content
+.content {
+  padding-top: 1rem;
+  p { text-align: justify; }
+}
+
+// FIXME: We override Foundation's default settings for <pre><code> blocks,
+// because they (i) render borders around every line in a block, (ii) create
+// padding on the first character, and (iii) don't play nicely with our code
+// highlighter prismjs.
+pre code {
+  border: none;
+  padding: 0;
+}
+
+// Style footer.
+footer {
+  padding: 1rem;
+  color: $dark-gray;
+  background-color: $light-gray;
+  font-size: 80%;
+  text-align: center;
+  .menu { justify-content: center; }
+  .copyright {
+    line-height: 1;
+    padding: 0.7rem;
+  }
+}
+
+// Sticky footer. See http://bit.ly/2BsrpW1 for details.
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+header, nav, footer {
+  flex-shrink: 0;
+}
+
+.person {
+  @extend .radius;
+  @extend .float-center;
+  width: 150px;
+  text-align: center;
+  position: relative;
+  .card-section {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    padding: 0;
+    color: $white;
+    background-color: scale-color($black, $alpha: -30%);
+    font-size: 80%;
+    a { color: $light-gray; }
+    a:hover { color: $primary-color; }
+  }
+}

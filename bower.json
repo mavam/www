@@ -1,0 +1,11 @@
+{
+  "name": "tenzir",
+  "description": "Tenzir",
+  "dependencies": {
+    "fastclick": "1.0.x",
+    "foundation-sites": "6.4.x",
+    "fontawesome": "4.7.x",
+    "motion-ui": "1.x",
+    "prismjs": "1.x"
+  }
+}

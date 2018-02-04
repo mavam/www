@@ -1,0 +1,277 @@
+%h1#home.text-center
+  Matthias Vallentin
+.card.person
+  .card-image
+    %img(src="/images/matthias.jpg" alt="Photo of Matthias Vallentin")
+  .card-section
+    %ul.menu.align-center
+      %li
+        %a(href="mailto:#{@config[:profile][:email]}")
+          %i.fa.fa-envelope
+      %li
+        %a(href="#{@config[:profile][:linkedin]}")
+          %i.fa.fa-linkedin
+      %li
+        %a(href="#{@config[:profile][:github]}")
+          %i.fa.fa-github
+%h2#bio
+  Short Bio
+:markdown
+  I am Co-Founder and CEO of [Tenzir](http://tenzir.com). Prior to that, I
+  was a post-doctoral researcher at [UC Berkeley](http://www.berkeley.edu)
+  supported by the [Signatures Innovation Fellows
+  Program](http://vcresearch.berkeley.edu/signatures/about). Before that, I
+  was a research scientist with the [networking and security
+  group](http://www.icir.org) at the [International Computer Science
+  Institute (ICSI)](http://www.icsi.berkeley.edu).
+
+  I received a Ph.D. in [computer science](http://www.cs.berkeley.edu) at [UC
+  Berkeley](http://www.berkeley.edu), where I had the good fortune of being
+  advised by [Vern Paxson](http://www.icir.org/vern). Before moving to
+  California, I received a B.S. and M.S. from the [Technische Universität
+  München](http://www.tum.edu). During my B.S., I co-founded
+  [globalways](http://www.globalways.net), a German company providing
+  soup-to-nuts Internet services.
+%h2#research
+  Research
+:markdown
+  My research focuses on designing high-level abstractions for large-scale
+  distributed systems, with an applied focus on network forensics and
+  high-performance network monitoring. More generally, I am interested in
+  empirically understanding the inherent space-time trade-off when analyzing
+  massive amounts of network data.
+%h3#publications
+  Publications
+:markdown
+  Matthias Vallentin, Vern Paxson, and Robin Sommer.
+  [VAST: A Unified Platform for Interactive Network
+  Forensics](/papers/nsdi16.pdf).
+  *USENIX Conference on Networked Systems Design and Implementation (NSDI)*.
+  March 2016. [*(slides)*](/papers/nsdi16-slides.pdf)
+
+  Robin Sommer, Matthias Vallentin, Lorenzo De Carli, and Vern Paxson.
+  [HILTI: An Abstract Execution Environment for Deep, Stateful Network Traffic
+  Analysis](/papers/imc14.pdf).
+  *Internet Measurement Conference (IMC)*.
+  November 2014.
+
+  Johanna Amann, Robin Sommer, Matthias Vallentin, and Seth Hall.
+  [No Attack Necessary: The Surprising Dynamics of SSL Trust
+  Relationships.](/papers/acsac13.pdf)
+  *Annual Computer Security Applications Confernce (ACSAC)*.
+  December 2013.
+
+  Devdatta Akhawe, Johanna Amann, Matthias Vallentin, and Robin Sommer.
+  [Here's My Cert, So Trust Me, Maybe? Understanding TLS Errors on the
+  Web.](/papers/www13.pdf)
+  *International Word Wide Web Conference (WWW)*.
+  May 2013.
+
+  Gregor Maier, Anja Feldmann, Vern Paxson, Robin Sommer, and Matthias Vallentin.
+  [An Assessment Of Overt Malicious Activity Manifest In Residential
+  Networks](/papers/dimva11.pdf).
+  *Conference on Detection of Intrusions and Malware and Vulnerability Assessment
+  (DIMVA)*.
+  July 2011.
+
+  Yahel Ben-David, Shaddi Hasan, Joyojeet Pal, Matthias Vallentin, Saurabh
+  Panjwani, Philipp Gutheim, Jay Chen, and Eric Brewer. [Computing Security in
+  the Developing World: A Case for Multidisciplinary
+  Research](/papers/nsdr11.pdf).
+  *ACM Workshop on Networked Systems for Developing Regions (NSDR)*.
+  June 2011.
+
+  Yahel Ben-David, Matthias Vallentin, Seth Fowler, and Eric Brewer.
+  [JaldiMAC - Taking the Distance Further](/papers/nsdr10.pdf).
+  *ACM Workshop on Networked Systems for Developing Regions (NSDR)*.
+  June 2010.
+
+  Matthias Vallentin, Robin Sommer, Jason Lee, Craig Leres, Vern Paxson, Brian
+  Tierney. [The NIDS Cluster: Scalably Stateful Network Intrusion Detection on
+  Commodity Hardware](/papers/raid07.pdf).
+  *Recent Advances in Intrusion Detection (RAID)*.
+  2007.
+%h3#trs
+  Technical Reports
+:markdown
+  Johanna Amann, Matthias Vallentin, Seth Hall, and Robin Sommer. [Revisiting
+  SSL: A Large-Scale Study of the Internet's Most Trusted
+  Protocol](/papers/icsi-tr-12-015.pdf).
+  *ICSI TR-12-015*.
+  Berkeley, December 2012.
+
+  Johanna Amann, Matthias Vallentin, Robin Sommer, and Seth Hall.
+  [Extracting Certificates from Live Traffic: A Near Real-Time SSL Notary
+  Service](/papers/icsi-tr-12-014.pdf).
+  *ICSI TR-12-014*.
+  Berkeley, November 2012.
+%h3#theses
+  Theses
+:markdown
+  Matthias Vallentin.
+  [Scalable Network Forensics](/papers/thesis-phd.pdf).
+  *Ph.D. Thesis*.
+  University of California, Berkeley, USA, May 2016.
+
+  Matthias Vallentin.
+  [VAST: Network Visibility Across Space and Time](/papers/thesis-msc.pdf).
+  *Master's Thesis*.
+  Technische Universität München, Germany, January 2009.
+
+  Matthias Vallentin.
+  [Transparent Load-Balancing for Network Intrusion Detection
+  Systems](/papers/thesis-bsc.pdf).
+  *Bachelor's Thesis*.
+  Technische Universität München, Germany, November 2006.
+%h2
+  Presentations
+:markdown
+  [CAF: C++ Actor Framework](/slides/berkeley-cpp-summit-caf.pdf).
+  *Berkeley C++ Summit*.
+  Berkeley, October 2016.
+
+  [Broker](/slides/brocon16-broker.pdf).
+  *BroCon*.
+  Austin, Texas, September 2016.
+
+  [Network Intrusion Detection & Forensics with
+  Bro](/slides/berke1337-bro-intro.pdf).
+  *BERKE1337 workshop*.
+  UC Berkeley, March 2016.
+
+  Matthias Vallentin, Dominik Charousset, Thomas C. Schmidt, Vern Paxson, and
+  Matthias Wählisch.
+  [Native Actors: How to Scale Network Forensics](/slides/sigcomm14-poster.pdf).
+  *ACM Special Interest Group on Data Communication (SIGCOMM)*.
+  August 2014. ([abstract](/slides/sigcomm14-demo.pdf))
+
+  [VAST: Visibility Across Space and Time - Architecture and
+  Usage](/slides/brocon14.pdf).
+  *BroCon*.
+  NCSA, Urbana, August 2014.
+
+  [Why Actors Rock: Designing a Distributed Database with
+  libcppa](/slides/cppnow14-vast.pdf).
+  [*C++Now*](http://cppnow.org).
+  Aspen, Colorado, May 2014.
+
+  [libcppa Now: High-Level Distributed Programming Without Sacrificing
+  Performance](/slides/cppnow13-libcppa.pdf).
+  [*C++Now*](http://cppnow.org).
+  Aspen, Colorado, May 2013.
+
+  [Towards Large-Scale Incident Response and Interactive Network
+  Forensics](/slides/quals.pdf).
+  Dissertation proposal.
+  UC Berkeley, December 2011.
+
+  [Network Forensics with Bro](/slides/bro-nf.pdf).
+  Talk at the [Bro workshop][BroWS11].
+  NCSA, Champaign-Urbana, November 2011.
+
+  [Tools of the Trade](/slides/bro-tott.pdf).
+  Talk at the [Bro workshop][BroWS11].
+  NCSA, Champaign-Urbana, November 2011.
+
+  [Intrusion Detection and the Bro NIDS](/course-work/intrusion_detection.pdf).
+  Presentation in the lecture [Security Engineering][sec-eng s08].
+  Munich, July 2008.
+
+  [Beyond Stack Smashing](/course-work/beyond_stack_smashing.pdf).
+  Presentation in the [Operating Systems
+  Laboratory](http://wwwspies.in.tum.de/lehre/praktika/WS0607/bsprakt).
+  Munich, February 2007.
+
+  [WiFi Basics &amp; Security](/slides/wifi_sec.pdf).
+  Invited talk in the lecture *Internet Protocols* held by Prof. Anja Feldman.
+  Munich, July 2006. (German)
+
+  [BroWS11]: http://www.bro-ids.org/bro-workshop-2011/
+%h2#coursework
+  Course Work
+:markdown
+  Matthias Vallentin and Gene Pang. [Bloom Filter Redux][cs270 project].
+  [CS 270: Combinatorical Algorithms and Data Structures][cs270 s11].
+  UC Berkeley, Spring 2011.
+
+  Matthias Vallentin. [Cacheable Web Objects: Understanding Their Modification
+  Times][stat248 project].
+  [STAT 248: Time Series Analysis][stat248 f10].
+  UC Berkeley, Fall 2010.
+
+  Adam Roberts, Harold Pimentel, and Matthias Vallentin. [Model Selection for
+  Bias Correction in RNA-Seq][cs281a project].
+  [STAT 241: Statistical Learning Theory - Graphical Models][cs281a f10].
+  UC Berkeley, Fall 2010.
+
+  Matthias Vallentin and Yahel Ben-David. [Quantifying Persistent Browser Cache
+  Poisoning][cs294-50 project].
+  [CS 294-50: Advanced Topics in Computer Security][cs294-50 s10].
+  UC Berkeley, Spring 2010.
+
+  Yahel Ben-David, Matthias Vallentin, Seth Fowler, and Samuel Zats. [JaldiMAC -
+  Taking the Distance Further][cs268 f09].
+  [CS 268: Computer Networks][cs268 f09] and [CS 262A: Advanced Topics in
+  Computer Systems][cs262a f09].
+  UC Berkeley, Fall 2009.
+
+  Matthias Vallentin and Seth Fowler. [A Concurrency Model for Event-Based
+  Network Intrusion Detection][cs294-33 project].
+  In [CS 294-33: Towards Highly-Productive Parallel Programming
+  Languages](http://parlang.pbworks.com).
+  UC Berkeley, Spring 2009.
+
+  Matthias Vallentin, Jon Whiteaker, and Yahel Ben-David.
+  [The Gh0st in the Shell: Network Security in the Himalayas][cs294-28 project].
+  In [CS 294-28: Network Security][cs294-28 s09].
+  UC Berkeley, Spring 2009.
+
+  Matthias Vallentin.
+  [On the Evolution of Buffer Overflows](/course-work/buffer_overflows.pdf).
+  In the advanced seminar course [Approaches for  Operating Systems in the
+  Future][os-seminar s07].
+  Munich, May 2007.
+
+  [cs270 s11]: http://www.cs.berkeley.edu/~satishr/cs270
+  [cs270 project]: /course-work/cs270-s11.pdf
+  [stat248 f10]: http://www.stat.berkeley.edu/~brill/Stat248/
+  [stat248 project]: /course-work/stat248-f10.pdf
+  [cs281a f10]: http://www.stat.berkeley.edu/~mjwain/stat241a
+  [cs281a project]: /course-work/cs281a-f10.pdf
+  [cs294-50 s10]: http://www.cs.berkeley.edu/~dawnsong/teaching/s10
+  [cs294-50 project]: /course-work/cs294-50-s10.pdf
+  [cs262a f09]: http://www.eecs.berkeley.edu/~brewer/cs262/9
+  [cs268 f09]: http://bnrg.eecs.berkeley.edu/~randy/Courses/CS268.F09
+  [cs268 project]: /course-work/cs268-f09.pdf
+  [cs268 syllabus]: http://bnrg.eecs.berkeley.edu/~randy/Courses/CS268.F09/syllabus.html
+  [cs294-33 project]: /course-work/cs294-33-s09.pdf
+  [cs294-28 s09]: http://www.icir.org/vern/cs294-28/
+  [cs294-28 project]: /course-work/cs294-28-s09.pdf
+  [sec-eng s08]: http://wwwschlichter.in.tum.de/Veranstaltungen/SecurityEngineering2008
+  [os-seminar s07]: http://wwwspies.in.tum.de/lehre/seminare/SS07/hauptsem
+%h2#projects
+  Projects
+%ul
+  %li
+    %a(href="http://statistics.zone")
+      The Probability and Statistics Cookbook
+  %li
+    %a(href="http://vast.io")
+      Visibility Across Space and Time (VAST)
+  %li
+    %a(href="http://actor-framework.org")
+      C++ Actor Framework (CAF)
+  %li
+    %a(href="http://bro.org")
+      The Bro Network Security Monitor
+  %li
+    %a(href="http://notary.icsi.berkeley.edu")
+      The ICSI Notary
+%h2#teaching
+  Teaching
+:markdown
+  At [UC Berkeley](http://www.berkeley.edu), I served as [teaching
+  assistant](https://hkn.eecs.berkeley.edu/coursesurveys/instructor/6784) for
+  the undergraduate computer security course (CS 161) in [Spring
+  2011](http://inst.eecs.berkeley.edu/~cs161/sp11) and
+  [Spring 2013](http://www.icir.org/vern/cs161-sp13).

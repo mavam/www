@@ -1,0 +1,28 @@
+.title-bar(data-responsive-toggle="responsive-menu" data-hide-for="medium")
+  .title-bar-left
+    %a(href="/")
+      %img#logo(src="/images/logo.svg" alt="Logo")
+  .title-bar-right
+    %button.menu-icon(type="button" data-toggle="responsive-menu")
+.top-bar#responsive-menu
+  .top-bar-left.show-for-medium
+    %a(href="/")
+      %img#logo(src="/images/logo.svg" alt="Logo")
+  .top-bar-right
+    -# Two versions of the menu for small and medium/large via visibility
+       classes. I would imagine this can be solved more intelligently without
+       code duplication. --MV
+    %ul.menu.vertical.align-right.hide-for-medium
+      %li
+        %a(href="/careers")
+          Careers
+      %li
+        %a(href="/about")
+          About
+    %ul.menu.show-for-medium
+      %li
+        %a(href="/careers")
+          Careers
+      %li
+        %a(href="/about")
+          About

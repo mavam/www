@@ -1,0 +1,35 @@
+// See https://github.com/zurb/foundation-sites-template/blob/master/scss/_settings.scss for all default settings.
+@import 'util/util';
+
+// Vitamin C colors: https://color.adobe.com/Vitamin-C-color-theme-492199/
+$foundation-palette: (
+  primary: #1f8a70,
+  secondary: #004358,
+  success: #bedb39,
+  warning: #ffe11a,
+  alert: #fd7400,
+);
+
+$ternary-color: #bedb39;
+$ternary-color-dark: scale-color($ternary-color, $lightness: -10%);
+
+// Repeated definitions from template, so that we can use the color variables
+// below.
+$light-gray: #e6e6e6;
+$medium-gray: #cacaca;
+$dark-gray: #8a8a8a;
+$black: #0a0a0a;
+$white: #fefefe;
+
+@include add-foundation-colors;
+
+// Navigation
+$topbar-background: $secondary-color;
+$topbar-submenu-background: $topbar-background;
+$titlebar-background: $secondary-color;
+$titlebar-icon-color: $ternary-color;
+$titlebar-icon-color-hover: $ternary-color-dark;
+$titlebar-color: $white;
+
+// Increase the default font size of accordion titles.
+$accordion-title-font-size: rem-calc(16);
