@@ -117,3 +117,7 @@ google:
   analytics:
     code: UA-1823891-1
     site: auto
+
+disqus:
+  shortname: mavam
+  developer: false

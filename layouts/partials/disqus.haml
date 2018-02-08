@@ -1,0 +1,21 @@
+%a#show-comments.button.expanded.radius(href='#' onclick='disqus();return false;')
+  Load Comments
+#disqus_thread
+  :javascript
+    var disqus_shortname = '#{@config[:disqus][:shortname]}';
+    var disqus_config = function () {
+      this.page.url = '#{@config[:base_url] + @item.path}';
+      this.page.identifier = '#{@item[:disqus]}';
+    };
+    var disqus_loaded = false;
+    function disqus() {
+      if (!disqus_loaded){
+        disqus_loaded = true;
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        // Hide the button after loading comments.
+        d.getElementById('show-comments').style.display = 'none';
+      }
+    };

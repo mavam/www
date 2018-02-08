@@ -275,3 +275,11 @@
   the undergraduate computer security course (CS 161) in [Spring
   2011](http://inst.eecs.berkeley.edu/~cs161/sp11) and
   [Spring 2013](http://www.icir.org/vern/cs161-sp13).
+%h2#blog
+  Blog
+%ul
+  - sorted_articles.each do |article|
+    %li
+      %span.date
+        = article[:created_at]
+      = link_to(article[:title], article)

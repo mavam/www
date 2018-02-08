@@ -1,3 +1,13 @@
+FILTER_OPTIONS = {
+  # We're using PrismJS for highlighting and don't want the default
+  # highlighter CodeRay.
+  kramdown: {
+    input: 'GFM',
+    hard_wrap: false,
+    syntax_highlighter: nil
+  }
+}
+
 # -- components --------------------------------------------------------------
 
 # Font Awesome
@@ -16,17 +26,17 @@ ignore "/assets/components/**/*"
 # -- files -------------------------------------------------------------------
 
 route "/assets/files/**/*" do
-  "/" + File.join(item.identifier.to_s.split("/")[3..-1])
+  '/' + item.identifier.components[2..-1] * '/'
 end
 
 # -- images ------------------------------------------------------------------
 
 route "/assets/images/favicon.*" do
-  "/" + File.basename(item.identifier.to_s)
+  '/' + File.basename(item.identifier.to_s)
 end
 
-route "/assets/images/**/*" do
-  "/" + File.join(item.identifier.to_s.split("/")[2..-1])
+route '/assets/images/**/*' do
+  '/' + item.identifier.components[1..-1] * '/'
 end
 
 # -- JavaScript --------------------------------------------------------------
@@ -75,7 +85,8 @@ passthrough '/robots.txt'
 
 compile "/**/*.{haml,md}" do
   filters = @item.identifier.exts.map { |e| e == 'md' ? :kramdown : e.to_sym }
-  filters.each { |f| filter f }
+  filters.each { |f| filter(f, FILTER_OPTIONS[f] || {}) }
+  layout "/partials/article.*" if item.identifier =~ '/blog/**/*'
   layout "/default.*"
 end
 
@@ -86,14 +97,24 @@ end
 compile "/**/*" do
 end
 
+route "/index.*" do
+  "/index.html"
+end
+
+route %r[/blog/(\d+)-(\d+)-(\d+)-(.+)/index.*] do |y, m, d, slug|
+  "/blog/#{y}/#{m}/#{d}/#{slug}/index.html"
+end
+
+route %r[/blog/(\d+)-(\d+)-(\d+)-(.+)/.*] do |y, m, d, slug|
+  "/blog/#{y}/#{m}/#{d}/#{slug}/" + item.identifier.components[-1]
+end
+
 route "/**/*.{haml,html,md}" do
-  if item.identifier =~ "/index.*"
-    "/index.html"
-  else
-    item.identifier.without_ext + "/index.html"
-  end
+  item.identifier.without_ext + "/index.html"
 end
 
 # -- layouts -----------------------------------------------------------------
 
 layout "/**/*", :haml
+
+# vim: ft=ruby
