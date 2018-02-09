@@ -6,7 +6,8 @@ math: true
 tags: [ 'math' ]
 ---
 
-Did you know that 2 equals 1? Here is the [proof][fallacy]:
+Did you know that 2 equals 1? Here is the
+[proof](http://en.wikipedia.org/wiki/Mathematical_fallacy):
 
 ``` none
 (1) X = Y                         ; Given
@@ -33,5 +34,3 @@ $$
 
 \$$\square$$
 {:.float-right}
-
-[fallacy]: http://en.wikipedia.org/wiki/Mathematical_fallacy
