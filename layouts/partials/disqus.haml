@@ -1,5 +1,5 @@
 .separator-center.margin-bottom-2
-%a#show-comments.button.expanded.hollow.radius(href='#' onclick='disqus();return false;')
+%a#show-comments.button.expanded.hollow.radius(href='#' onclick='disqus();')
   Load Comments
 #disqus_thread
   :javascript
@@ -18,5 +18,6 @@
         (d.head || d.body).appendChild(s);
         // Hide the button after loading comments.
         d.getElementById('show-comments').style.display = 'none';
+        return false;
       }
     };
