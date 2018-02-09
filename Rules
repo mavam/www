@@ -79,6 +79,7 @@ end
 # -- copy as-is --------------------------------------------------------------
 
 passthrough '/CNAME'
+passthrough '/google452b023cf3b18780.html'
 passthrough '/robots.txt'
 
 # -- default rules -----------------------------------------------------------
