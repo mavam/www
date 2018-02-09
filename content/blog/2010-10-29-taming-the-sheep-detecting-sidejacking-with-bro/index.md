@@ -24,16 +24,14 @@ the initial authentication and then drop back to unencrypted HTTP throughout
 the rest of communication. As a consequence, the session cookies fly around in
 clear text and are easily captured.
 
-Detection
-=========
+## Detection
 
 As network operators and security analysts, we would like to know when session
 hijacking occurs. In the following, I present the design and implementation of
 a sidejacking detector that I wrote for the [Bro](http://www.bro-ids.org)
 intrusion detection system.
 
-Design Considerations
----------------------
+### Design Considerations
 
 The detection strategy depends on the network topology and available context.
 One problem is how to define a user. In flat IP address space, it makes sense
@@ -66,8 +64,7 @@ restrict the cookie to the relevant fields, and otherwise use the cookie as a
 whole. The default set of known services that ships with the detector is based
 on all handlers Firesheep currently implements.
 
-Decision Trees
---------------
+### Decision Trees
 
 Given these considerations, how should the detector operate? Clearly, we need a
 flexible mechanism that can be configured to meet the specific conditions.
@@ -87,8 +84,7 @@ context](user_id_ext.png){:.float-center}
 Note that session cookie reuse is only reported when the user is defined as IP
 address.
 
-Operation
----------
+### Operation
 
 Simply using the sidejacking detector is straight-forward and does not require
 detailed knowledge of Bro. Since it is implemented as a Bro script, running it
@@ -169,8 +165,7 @@ If an attacker uses the cookie after the expiration interval, Bro will not
 detect it. Naturally, there is a trade-off between accumulating state in memory
 and opportunity for evasion.
 
-Mitigation
-==========
+## Mitigation
 
 By weaponizing the general public, Firesheep will hopefully push vendors to
 switch TLS-only deployments more rapidly. During this painful migration period,
@@ -180,8 +175,7 @@ the client that specifies a time period during which the client should use
 encryption only. That is, the server upgrades the connection if the client
 tries to use unencrypted HTTP.
 
-Bro Code
-========
+## Bro Code
 
 Practical security is all about raising the bar. Hopefully this detector allows
 network operators to pinpoint the use of sidejacking attacks, such as

@@ -16,8 +16,7 @@ Many tools exist to accomplish this task. Below I will describe three tools
 that particularly caught my attention while working with network traffic:
 **tcpdstat**, **ipsumdump**, and **Netdude**.
 
-tcpdstat
-========
+## tcpdstat
 
 Written by Kenjiro Cho, **tcpdstat** is a powerful  tool that performs an
 in-depth protocol breakdown by bytes and packets. It further displays average
@@ -154,8 +153,7 @@ use, but it lacks some flexibility. The tool is your perfect choice if the
 above output is enough for you. Otherwise, you might incorporate further tools
 into your analysis.
 
-ipsumdump
-=========
+## ipsumdump
 
 The [ipsumpdump](http://www.cs.ucla.edu/~kohler/ipsumdump) utility from Eddie
 Kohler is the "swiss-army knife" for trace analysis.
@@ -265,8 +263,7 @@ or to obtain well-formatted output for subsequent processing/scripting. It
 unveils its real power when used for trace manipulation such as merging,
 modifying, or anonymizing tcpdump traces.
 
-Netdude
-=======
+## Netdude
 
 [Netdude](http://netdude.sourceforge.net) (**Net**work **du**mp data
 **d**isplayer and **e**ditor) is a graphical tool to edit tcpdump trace files,
@@ -303,8 +300,7 @@ fields.
 
 ![Fiddling with TCP header fields in Netdude](netdude.gif){:.float-center .shadow}
 
-Conclusion
-==========
+## Conclusion
 
 Nowadays, captured network traffic is mostly available as a tcpdump/libpcap
 trace. In this article, I introduce three tools enabling in-depth trace

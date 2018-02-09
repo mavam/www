@@ -15,8 +15,7 @@ Facebook window open in the browser. In this post, I describe how the webchat
 protocol works and show how to write a [Bro](http://www.bro-ids.org) script
 that analyzes chat sessions.
 
-The Facebook Webchat Protocol
-=============================
+## The Facebook Webchat Protocol
 
 ![Facebook](fb-icon.png){:.float-right .margin-left-1}
 Behind the scenes, the webchat utilizes a long-lived AJAX connection to
@@ -60,8 +59,7 @@ This one is an actual chat message. The nice thing is that such messages are
 self-contained and include quite some meta information: contents, timestamps,
 names, unique IDs, and even genders.
 
-The Bro Script
-==============
+## The Bro Script
 
 Alas, the HTTP body is a big fat opaque string with no structure and parsing
 nested data in strings with just regular expression is clunky at best. (For

@@ -18,8 +18,7 @@ specific certificate as long as the browser sees a valid chain of trust
 terminated with a known root certificate. Although the authors claim that this
 attack is exercised in practice, data-driven evidence is yet lacking.
 
-Proactive Protection
-====================
+## Proactive Protection
 
 In order to assess whether or not one's current TLS session is being
 intercepted, the authors have developed a Firefox extension called CertLock,
@@ -34,8 +33,7 @@ presents a warning to the user; otherwise the page loads without any warnings.
 Although CertLock alleviates some problems with the compelled certificate
 creation attack, it is still limited in the following ways.
 
-Trust-On-First-Use
-------------------
+### Trust-On-First-Use
 
 When visiting a TLS-protected website for the first time, the user immediately
 faces a dilemma: how to trust the certificate chain when there is nothing to
@@ -51,8 +49,7 @@ and start over with a fresh system installation. This is precisly the scenario
 where CertLock would be necessary, but cannot function due to the lack of
 browsing history.
 
-Ground Truth
-------------
+### Ground Truth
 
 A well-known issue with anomaly detection is the presence of an
 adversary during the training phase, who can later conduct unnoticed attacks
@@ -63,8 +60,7 @@ misclassified as untrustworthy, and a forged certificate may be blindly
 accepted. This problem highlights the need for a trustworthy past certificate
 history, otherwise it is impossible to make an accurate decision.
 
-False Negatives
----------------
+### False Negatives
 
 CertLock suffers from false negatives when *(i)* the actual and compelled CAs
 are from the same country and *(ii)* the certificate differs from the one in
@@ -72,8 +68,7 @@ the history but the issuing CA has not changed. At the same time, the number of
 false positives is greatly reduced this way, which is vital to get the user's
 attention in this scenario.
 
-User Failure
-------------
+### User Failure
 
 When I asked two of my friends what their impression was of CertLock's displayed
 warning, I was surprised to hear "it looks like spam - what does Russia have to
@@ -90,8 +85,7 @@ design. However, given the population's
 of international relations, this may be a challenging task.
 
 
-Retrospective Analysis
-======================
+## Retrospective Analysis
 
 In addition to the aspects above which highlight the need for better proactive
 defenses, opportunities for forensic analysis are equally important to

@@ -29,8 +29,7 @@ I deem useful.
 
 [Download](http://statistics.zone){:.button .radius .expanded .success}
 
-Screenshots
-===========
+## Screenshots
 
 ![Discrete Distributions](dist-disc.png){:.float-center .shaded}
 ![Continuous Distributions](dist-cont.png){:.float-center .shaded}

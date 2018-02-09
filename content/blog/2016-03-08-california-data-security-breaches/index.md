@@ -18,7 +18,7 @@ they must notify the involved people. The Department of Justice maintains a
 [list of all data breaches][ca-breaches] since January 2012. In this article, I
 am taking a look at what we can learn from this data set.
 
-# Data Set
+## Data Set
 
 As of this writing, the list consists of 740 entries. Each row represents
 one or more reported data breaches of a single organization and includes the
@@ -26,7 +26,7 @@ date of the breach and when it was reported. If we consider all breaches, we
 arrive at a total of 899. A total of 183 (20%) breaches have an unknown breach
 date.
 
-# Analysis
+## Analysis
 
 Given this data set, I am trying to answer the following questions:
 
@@ -35,7 +35,7 @@ Given this data set, I am trying to answer the following questions:
 - What can we tell about *responsiveness*, i.e., the time from breach to
   disclosure?
 
-## Breach Distribution
+### Breach Distribution
 
 First, let us get a high-level idea of the data. The plot below shows the
 cumulative number of breach reports over time.
@@ -62,7 +62,7 @@ weekend. One explanation for the higher reports near the weekend may be that
 incident responders were given a deadline to finish their report out "by the
 end of the week."
 
-## Leaderboard
+### Leaderboard
 
 Which organizations have experience the most breaches?
 
@@ -79,7 +79,7 @@ organizations with the most number of reports.
 The health sector dominates in this ranking, followed by financial service
 organization. Clearly, Yolo Federal Credit Union lives up to its name.
 
-## Responsiveness
+### Responsiveness
 
 Let us take a closer look at the *responsiveness*: the time from when the data
 breach occurred to when the organization reported it. The law requires
@@ -142,7 +142,7 @@ better tools for network forensics at scale with the open-source platform [VAST
 (Visibility Across Space and Time)](http://vast.io), which our [USENIX
 NSDI'16 paper][nsdi-paper] describes in more detail.
 
-# Conclusion
+## Conclusion
 
 When looking at California breach data from a high-level, we can draw the
 following conclusions:

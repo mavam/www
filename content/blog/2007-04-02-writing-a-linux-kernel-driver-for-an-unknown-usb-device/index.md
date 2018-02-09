@@ -14,8 +14,7 @@ addition to the kernel driver I introduce a simple user-space tool that can be
 used to control the device. Although I have to delve into the specifics of a
 particular device, the process can be applied to other USB devices as well.
 
-Introduction
-============
+## Introduction
 
 ![Dream Cheeky USB missile launcher](dreamcheeky-ml.jpg)
 {:.float-right .margin-left-1}
@@ -42,8 +41,7 @@ describe the kernel module architecture which incorporates the derived control
 commands. Finally, I demonstrate a simple tool in user-space that makes use of
 the driver.
 
-Related Work
-============
+## Related Work
 
 Apparently I have not been the only one who played with this gadget. However,
 none of the existing approaches I have encountered pursue the creation of a
@@ -59,8 +57,7 @@ launcher of a different manufacturer. The author combined the missile
 launcher with a webcam in order to to create an automated sentry guard reacting
 on motion. I will return to these funky ideas later.
 
-USB Primer
-==========
+## USB Primer
 
 The universal serial bus (USB) connects a host computer with numerous
 peripheral devices. It was designed to unify a wide range of slow and old buses
@@ -168,8 +165,7 @@ an IN endpoint, it returns status information from the device. To handle the
 incoming data we first need to understand the missile launcher control
 protocol.
 
-Reverse-Engineering the USB Protocol
-====================================
+## Reverse-Engineering the USB Protocol
 
 The first step involves reverse-engineering (or "snooping") the USB
 communication protocol spoken by the binary Windows driver. One approach would
@@ -233,8 +229,7 @@ comment) and indicate that a boundary has been reached.
 With all required control information in place, let's now adopt the programmer's
 perspective and delve into the land of kernel programming.
 
-The Device Driver
-=================
+## The Device Driver
 
 Writing code for the kernel is an art by itself and I will only touch the tip of
 the iceberg. To get a deeper understanding I recommend the books [Linux Device
@@ -531,8 +526,7 @@ or cause anything putting the process to sleep. With this automatic correction
 mechanism, the missile launcher is shielded from improper use. Again, it does
 not impose policy constraints, it protects only the device.
 
-User-Space Control
-==================
+## User-Space Control
 
 For most folks fun starts in here. One doesn't kick the bucket when
 dereferencing NULL-pointers and the good old libc is available, too. After
@@ -662,8 +656,7 @@ not pursue this project. Maybe someday, in the unlikely event of getting bored,
 I will return to this idea.  Nevertheless, my friend Thorsten Röder quickly
 hacked together a Qt GUI. It somehow resembles an early version of Quake...
 
-Summary
-=======
+## Summary
 
 In this article, I frame the creation of a USB device driver for the Linux
 kernel. At first I reverse-engineer the unknown USB protocol by intercepting

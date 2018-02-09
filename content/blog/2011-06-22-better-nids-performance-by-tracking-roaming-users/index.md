@@ -15,8 +15,7 @@ article, I discuss how tracking roaming users in DHCP-enabled networks can
 improve the false positive rate of network intrusion detection system (NIDS)
 detectors of this kind.
 
-Passive Detection
-=================
+## Passive Detection
 
 Passive monitoring is less intrusive than active approaches, such as the
 [Blacksheep][blacksheep] Firefox extension which sends fake cookies and
@@ -37,8 +36,7 @@ to the lack of a crisp user definition: IP address are ephemeral in DHCP
 networks and cannot be used to analyze user activity over time without taking
 roaming into account.
 
-Reducing False Positives
-========================
+## Reducing False Positives
 
 How should we ? The key insight is to keep track of all IP addresses
 under which the same user appears, where a user is uniquely identified by its
@@ -125,8 +123,7 @@ The latest version of the [detector][sidejack.bro] and the [roaming
 script][roam.bro] are available from the [Bro scripts git
 repository](http://git.bro-ids.org/bro-scripts.git).
 
-Summary
-=======
+## Summary
 
 This article describes how to reduce false positives of network-based detectors
 that base their notion of accountability on IP addresses. I show how flexible

@@ -23,8 +23,7 @@ hook](https://github.com/github/github-services/blob/master/services/email.rb)
 cannot send out diffs, which greatly limits its usefulness. This poses the
 question: can github users still obtain emails with diffs? 
 
-git-notifier + github = gitdub
-==============================
+## git-notifier + github = gitdub
 
 Enter [gitdub][gitdub]: a slim [sinatra](http://www.sinatrarb.com/) HTTP server
 that utilizes github's [webhook
@@ -35,8 +34,7 @@ changeset](https://gist.github.com/2732972). Gitdub parses this data, updates
 its corresponding local bare git repository, and then invokes git-notifier to
 mail out the diffs.
 
-Setup
-=====
+## Setup
 
 To start dubbing your commits with gitdub, you only need a machine with a
 public IP address that can receive inbound TCP connections. In a nutshell,
@@ -73,8 +71,7 @@ all commits of user `mavam`. In each entry, you can overload settings from the
 `notifier` block. For a complete example, please refer to the [gitdub
 README][gitdub].
 
-Example
-=======
+## Example
 
 An exemplary email from git-notifier looks like this:
 

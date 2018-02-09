@@ -16,8 +16,7 @@ filters as a C++11 library.
 > a useful alternative.\\
 > --Mitzenmacher
 
-Introduction
-============
+## Introduction
 
 A [Bloom filter](http://en.wikipedia.org/wiki/Bloom_filter) is a randomized
 [synopsis data structure][Gibbons98] that supports set membership queries.
@@ -45,13 +44,11 @@ peer-to-peer applications, routing protocols, [IP
 traceback](http://en.wikipedia.org/wiki/IP_traceback), resource location, etc.
 Broder and Mitzenmacher give a [good survey of network applications][Broder05].
 
-Bloom Filters
-=============
+## Bloom Filters
 
 Before we delve into the discussion, let us agree on some common notation.
 
-Terminology
------------
+### Terminology
 
 - Universe $$U$$
 - $$N$$ distinct items
@@ -76,8 +73,7 @@ Terminology
 - A Bloom filter is *full* when then number of added items exceeds
   $$\kappa$$
 
-Basic
------
+### Basic
 
 ![The basic Bloom filter devised by Burton Bloom. To insert an item x, we set
 the corresponding positions in the bit vector to
@@ -139,8 +135,7 @@ $$
 m = -\frac{n\ln p}{(\ln 2)^2}.
 $$
 
-Multisets
----------
+### Multisets
 
 A basic Bloom filter can only represent a set, but neither allows for querying
 the multiplicities of an item, nor does it support deleting entries. I use the
@@ -150,7 +145,7 @@ extends a basic Bloom filter with width parameter $$w$$. (Note that the
 [original counting Bloom filter][Fan98] used cells with $$w=4$$ only to support
 deletion, not to count elements.)
 
-### Counting
+#### Counting
 
 ![Each cell in the counting Bloom filter has a fixed bit width w. To insert
 an item x, increment the counters C_x. To remove an item y, decrement its
@@ -185,7 +180,7 @@ $$w$$ may quickly lead to maximum counter values. As such, choosing
 the right value is a difficult trade-off that depends on the distribution
 of the data.
 
-### Bitwise
+#### Bitwise
 
 ![The bitwise Bloom filter consists of l counting Bloom filters, each of which
 represent w_i orders of magnitude of the entire counter. This Figure
@@ -212,7 +207,7 @@ $$
 C = \sum_{i=0}^{l-1} c_i 2^{\sum_{j=0}^i w_i}.
 $$
 
-### Spectral
+#### Spectral
 
 The [spectral Bloom filter][Cohen03-tech] is an optimized version of the
 counting Bloom filter. It consists of two extra algorithms in addition to MS
@@ -268,8 +263,7 @@ $$h_i$$ mapping to section $$i$$. Similarly, we can derive the
 [Fast-AMS][Cormode05] sketch by taking the median of the $$k$$ counters instead
 of their minimum.
 
-Aging
------
+### Aging
 
 A problem all the above Bloom filter variants is that they eventually fill up
 over time when dealing with a large set or stream of data. This means that at
@@ -291,7 +285,7 @@ To support a sliding window, we would like a Bloom filter which acts like
 a FIFO. In the following, I discuss two different Bloom filter flavors that
 aim at providing this property.
 
-### Stable
+#### Stable
 
 The [stable Bloom filter][Deng06] is essentially a basic Bloom filter with an
 underlying bit vector with a fixed cell width $$w$$. However, counters do not
@@ -310,7 +304,7 @@ $$
 \phi_P \approx 1 - \frac{1}{1+\frac{1}{d(1/k-1/m)}} = \frac{1}{d/k-d/m+1}
 $$
 
-### A<sup>2</sup>
+#### A<sup>2</sup>
 
 The [$$A^2$$ Bloom filter][Yoon09], also known as **active-active buffering**,
 provides another type of FIFO. It uses two single-bit vectors $$V_1$$ and
@@ -341,8 +335,7 @@ k_a^* =
 \kappa_a^* = \left\lfloor \frac{m}{2k_a^*} \ln2 \right\rfloor
 $$
 
-libbf
-=====
+## libbf
 
 As part of a class project for the course [Combinatorial Algorithms and Data
 Structures](http://www.cs.berkeley.edu/~satishr/cs270/) in Spring 2011 at UC
@@ -353,8 +346,7 @@ final presentation are also available; they go a little deeper into the
 algorithmic details. Note that the slides cover an early version of the
 implementation; the API has changed significantly since.
 
-Related Work
-============
+## Related Work
 
 I only presented a few Bloom filter types in this article, but active research
 in this field yielded many more variations. For example, the [dynamic][Guo06]
