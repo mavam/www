@@ -7,8 +7,8 @@ terms][cc-by-sa-legal].
 [![CC-BY-SA logo][cc-by-sa-logo]][cc-by-sa-page]
 
 The look and feel of this site and the personal pictures are not licensed under
-the terms mentioned above. If you have any questions about complying with our
-licensing terms for this site, please send me an email.
+the terms mentioned above. If you have any questions about complying with the
+licensing terms for this site, please send an email to <matthias@berkeley.edu>.
 
 [cc-by-sa-page]: https://creativecommons.org/licenses/by-sa/4.0/
 [cc-by-sa-legal]: https://creativecommons.org/licenses/by-sa/4.0/legalcode

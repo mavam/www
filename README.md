@@ -1,9 +1,9 @@
-# tenzir.com
+# Matthias Vallentin
 
-This repository hosts the source code for <http://tenzir.com>, subject to our
-[licensing terms](LICENSE.md).
+This repository hosts the source code for my personal website at
+<http://matthias.vallentin.net>.
 
-# Architecture
+## Architecture
 
 This site uses the static-site generator [nanoc](http://nanoc.ws) to drive the
 preprocessing and compilation of the various frameworks unified in this
@@ -76,7 +76,7 @@ automatically recompile the site:
 If you're tired of manually hitting reload in the browser, just install the
 [LiveReload](http://livereload.com/extensions) extension.
 
-# Deploying
+## Deploying
 
 After compiling and visually inspecting the changes, perform the unit tests:
 
@@ -94,3 +94,7 @@ repository in the `output` directory in branch `gh-pages`:
 Thereafter, use nanoc to automatically push your changes upstream:
 
     bundle exec nanoc deploy
+
+## License
+
+Please consult the [licensing terms](LICENSE.md) for details.
