@@ -10,6 +10,8 @@
     %link(rel="stylesheet" href="/css/prism.css" )
     %script(src="/js/all.js")
     = render '/partials/analytics.*'
+    - if @item[:math]
+      = render '/partials/mathjax.*'
   %body
     %main
       .grid-x.grid-padding-x.align-center
