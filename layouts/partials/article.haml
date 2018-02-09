@@ -1,5 +1,18 @@
 %h1
   = @item[:title]
--# TODO: add posting meta data
+.grid-x.grid-padding-x.align-justify.margin-bottom-1
+  .cell.shrink
+    %span.label.radius
+      %i.fa.fa-calendar-o
+      = @item[:created_at]
+    - if @item[:updated_at]
+      %span.label.radius.warning
+        %i.fa.fa-calendar-plus-o
+        = @item[:updated_at]
+  - if @item[:tags]
+    .cell.shrink
+      - @item[:tags].each do |tag|
+        %span.label.radius.secondary
+          = tag
 ~ yield
 = render '/partials/disqus.*'
