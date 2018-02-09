@@ -27,7 +27,7 @@ a unified notation. If you find any mistakes or have suggestions for further
 topics, I'd appreciate if you contact me. I will continue to add material that
 I deem useful.
 
-[Download](http://statistics.zone){:.button .expanded}
+[Download](http://statistics.zone){:.button .radius .expanded .success}
 
 Screenshots
 ===========
