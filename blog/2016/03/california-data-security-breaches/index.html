@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - California Data Breaches
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+California Data Breaches
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2016-03-08
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+statistics
+</span>
+<span class='label radius secondary'>
+security
+</span>
+<span class='label radius secondary'>
+network forensics
+</span>
+<span class='label radius secondary'>
+R
+</span>
+<span class='label radius secondary'>
+VAST
+</span>
+</div>
+</div>
+<p><img src="doj-seal.png" alt="DOJ Seal" class="float-right padding-left-1" />
+California makes data breach reports transparent to the public, thanks to
+excellent laws:</p>
+
+<blockquote>
+  <p>California law requires a business or state agency to notify any California
+resident whose unencrypted personal information, as defined, was acquired, or
+reasonably believed to have been acquired, by an unauthorized person</p>
+</blockquote>
+
+<p>If an organization loses unencrypted personal identifiable information (PII),
+they must notify the involved people. The Department of Justice maintains a
+<a href="https://oag.ca.gov/ecrime/databreach/list">list of all data breaches</a> since January 2012. In this article, I
+am taking a look at what we can learn from this data set.</p>
+
+<h2 id="data-set">Data Set</h2>
+
+<p>As of this writing, the list consists of 740 entries. Each row represents
+one or more reported data breaches of a single organization and includes the
+date of the breach and when it was reported. If we consider all breaches, we
+arrive at a total of 899. A total of 183 (20%) breaches have an unknown breach
+date.</p>
+
+<h2 id="analysis">Analysis</h2>
+
+<p>Given this data set, I am trying to answer the following questions:</p>
+
+<ul>
+  <li>What does the distribution of breaches and reports look like?</li>
+  <li>Which organizations have been breached most?</li>
+  <li>What can we tell about <em>responsiveness</em>, i.e., the time from breach to
+disclosure?</li>
+</ul>
+
+<h3 id="breach-distribution">Breach Distribution</h3>
+
+<p>First, let us get a high-level idea of the data. The plot below shows the
+cumulative number of breach reports over time.</p>
+
+<p><img src="breaches-cumulative-reported.png" alt="Cumulative reports" /></p>
+
+<p>We observe a steady and linear increase over time. The next plot shows the
+number of breaches and reports by year.</p>
+
+<p><img src="breaches-by-year.png" alt="Breaches and reports by year" /></p>
+
+<p>2014 had the most breaches, while 2015 the most reports. From 2012 to 2015, we
+have a mean of 168 breaches per year. There is a natural lag in this data, from
+the time to breach until report, as we see later when assessing responsiveness.</p>
+
+<p>Does a particular weekday stand out, when looking at breaches and reports? The
+following plot attempts to answer this question.</p>
+
+<p><img src="breaches-by-weekday.png" alt="Breaches by weekday" /></p>
+
+<p>While breaches occur rather uniformly across the week, reports tend to focus on
+the last workdays of the week. Naturally, we do not see official reports on the
+weekend. One explanation for the higher reports near the weekend may be that
+incident responders were given a deadline to finish their report out “by the
+end of the week.”</p>
+
+<h3 id="leaderboard">Leaderboard</h3>
+
+<p>Which organizations have experience the most breaches?</p>
+
+<p><img src="breaches-top10-most-breached.png" alt="Organizations with the most breaches" /></p>
+
+<p>We can see that American Express leads the game. However, some financial
+organizations (American Express, Discover) also <a href="https://oag.ca.gov/breachreport2016">have to report breaches which
+occurred at the merchants</a>, so consider the numbers with a grain of
+salt. Let’s take the two out in the next plots, which shows the number the
+organizations with the most number of reports.</p>
+
+<p><img src="breaches-top10-most-reported.png" alt="Organizations with the most reports" /></p>
+
+<p>The health sector dominates in this ranking, followed by financial service
+organization. Clearly, Yolo Federal Credit Union lives up to its name.</p>
+
+<h3 id="responsiveness">Responsiveness</h3>
+
+<p>Let us take a closer look at the <em>responsiveness</em>: the time from when the data
+breach occurred to when the organization reported it. The law requires
+reporting individuals “<em>in the most expedient time possible and without
+unreasonable delay.</em>”</p>
+
+<p>At first, I found that one entry in the data set has a negative responsiveness,
+which did not make sense. How can an organization report a breach before it
+occurred? I wrote the Office of the Attorney General an email for
+clarification, and it turned out it was typo. They fixed it within a few hours.</p>
+
+<p>The plot below shows the <a href="https://en.wikipedia.org/wiki/Empirical_distribution_function">empirical cumulative distribution function
+(ECDF)</a> of the response time.</p>
+
+<p><img src="breaches-responsiveness-ecdf.png" alt="Response time" /></p>
+
+<p>We observe a median response time of 2 months. The 1st quartile is at 1 month
+and the 3rd at 5 months. 10% of all breaches take longer than 1 year and 3%
+longer than 2 years. We obviously grapple with <em>advanced persistent threats</em>.</p>
+
+<p>Let’s look at the two ends of this spectrum: the slowest and the fastest
+responders.</p>
+
+<p><img src="breaches-responsiveness-worst.png" alt="Slowest responsiveness" />
+<img src="breaches-responsiveness-best.png" alt="Fastest responsiveness" /></p>
+
+<p>The first plot shows the slowest responders and the second the fastest. Note
+that the first y-axis is in terms of <em>years</em> and the latter in <em>days</em>. If a
+company experienced multiple breaches, I took the median of those where the
+breach time is available. (In 183 cases, organizations did not know when the
+breach occured.) As we see in the first plot, the health sector clearly
+exhibits the slowest response time, but the financial sector and universities
+follow. The fastest responder was Consolidated Tribal Health Project, Inc.,
+with a report going out on the same day as the breach. This particular breach
+involved a <a href="https://oag.ca.gov/system/files/CTHP%20Exhibits_0.pdf">disgrunteled former employee</a>. Other
+than that, no clear market sector pattern stands out.</p>
+
+<p>What happens, when we look at a yearly analysis? Did the industry got any
+better over time? The next plot attempts to go deeper into this question, by
+grouping the responsiveness by the report year.</p>
+
+<p><img src="breaches-responsiveness-ecdf-by-year.png" alt="Response time by year" /></p>
+
+<p>First, I encourage you to squint a little and do not pay much attention to the
+2016 distribution. We have just finished Q1 in this year not yet enough data to
+compare this year to the other ones. For 2012 and 2015, we see an <em>increasing</em>
+responsiveness. The median responsiveness in 2012 was 43 days, and 83 in 2015.
+Almost twice as much! Visually, we see that the blue 2015 line “detaches”
+itself from the other three. In fact, the distance roughly corresponds to 50%
+in time, e.g., the median responsiveness in 2014 was 55 days, and 83.5 days in
+2015, which is an increase of 51%.</p>
+
+<p>What we cannot learn from this data, is the obvious next question: <em>why</em>? Is
+this a policy problem? Do we need better workflows in incident response teams?
+Or is a technical issue?</p>
+
+<p>My own research strongly focuses on the technical aspect: I am developing
+better tools for network forensics at scale with the open-source platform <a href="http://vast.io">VAST
+(Visibility Across Space and Time)</a>, which our <a href="https://www.usenix.org/conference/nsdi16/technical-sessions/presentation/vallentin">USENIX
+NSDI’16 paper</a> describes in more detail.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>When looking at California breach data from a high-level, we can draw the
+following conclusions:</p>
+
+<ul>
+  <li>
+    <p>We observe a steady amount of data breaches.</p>
+  </li>
+  <li>
+    <p>Organizations from the health and financial sector have experienced the most
+number of breaches per institution. (Note: <a href="https://oag.ca.gov/breachreport2016">across organizations</a>,
+the retail sector exhibits the largest number of breaches with 25%,
+followed by “other” with 19%, finance with 18%, and then health care with
+16%.)</p>
+  </li>
+  <li>
+    <p>The responsiveness in incident reporting <em>increases</em> over the years. In 2015,
+the median response time was 50% higher than in 2014. The health sector
+appears to have the slowest response times.</p>
+  </li>
+</ul>
+
+<p>For an in-depth analysis, also check out Attorney General Kamala D. Harris’
+<a href="https://oag.ca.gov/breachreport2016">data breach report</a>, which includes more details about sector
+distribution, number of records breached, and breach types.</p>
+
+<p>To promote reproducibility, I make available all my <a href="https://gist.github.com/mavam/f1467d48d5cf8a460b57">R code</a> I used for
+this analysis.</p>
+
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2016/03/california-data-security-breaches/';
+    this.page.identifier = '';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>

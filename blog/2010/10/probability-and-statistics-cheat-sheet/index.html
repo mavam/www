@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - Probability and Statistics Cheat Sheet
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+Probability and Statistics Cheat Sheet
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2010-10-07
+</span>
+<span class='label radius warning'>
+<i class='fa fa-calendar-plus-o'></i>
+2011-06-05
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+math
+</span>
+<span class='label radius secondary'>
+probability
+</span>
+<span class='label radius secondary'>
+statistics
+</span>
+</div>
+</div>
+<p><strong>Update</strong> (<em>June 5, 2011</em>):
+The probability and statistics cheat sheet now has it’s <a href="http://statistics.zone">own
+page</a>. Furthermore, I decided to rename
+it to <em>cookbook</em> because the sheer number of pages <a href="http://www.johndcook.com/blog/2010/10/04/probability-and-statistics-cheat-sheet/">stretches the definition of
+<em>cheat sheet</em> quite a bit</a>.</p>
+
+<p>While I started to explore the many univariate probability distribution
+relationships last year, I created a PDF to help me remember them. This
+document quickly grew into a basic probability theory reference and its
+substantial parts evolved while I was taking the excellent course STAT 200B at
+<a href="http://www.stat.berkeley.edu">UC Berkeley</a> taught by <a href="http://www.stat.berkeley.edu/~cgk">Cari
+Kaufman</a>. Today, it is more like a cookbook
+and helps me to swap back in the relevant context when facing statistical
+challenges.</p>
+
+<p>The purpose of this cookbook is to bundle essential statistical knowledge with
+a unified notation. If you find any mistakes or have suggestions for further
+topics, I’d appreciate if you contact me. I will continue to add material that
+I deem useful.</p>
+
+<p><a href="http://statistics.zone" class="button radius expanded success">Download</a></p>
+
+<h2 id="screenshots">Screenshots</h2>
+
+<p><img src="dist-disc.png" alt="Discrete Distributions" class="float-center shaded" />
+<img src="dist-cont.png" alt="Continuous Distributions" class="float-center shaded" /></p>
+
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2010/10/probability-and-statistics-cheat-sheet/';
+    this.page.identifier = '3592213611601409993';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>
