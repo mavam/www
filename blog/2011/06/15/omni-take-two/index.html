@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - Omni, Take Two
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+<script type='text/x-mathjax-config'>
+MathJax.Hub.Config({
+  extensions: ["tex2jax.js"],
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+    displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+    processEscapes: true
+  },
+  "HTML-CSS": { availableFonts: ["TeX"] }
+});
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML' type='text/javascript'></script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+Omni, Take Two
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2011-06-15
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+math
+</span>
+</div>
+</div>
+<p>Did you know that 2 equals 1? Here is the
+<a href="http://en.wikipedia.org/wiki/Mathematical_fallacy">proof</a>:</p>
+
+<pre><code class="language-none">(1) X = Y                         ; Given&#x000A;(2) X^2 = XY                      ; Multiply both sides by X&#x000A;(3) X^2-Y^2 = XY-Y^2              ; Subtract Y^2 from both sides&#x000A;(4) (X+Y)(X-Y) = Y(X-Y)           ; Factor&#x000A;(5) X+Y = Y                       ; Cancel out (X-Y) term&#x000A;(6) 2Y = Y                        ; Substitute X for Y, by equation 1&#x000A;(7) 2 = 1                         ; Divide both sides by Y&#x000A;                -- "Omni", proof that 2 equals 1&#x000A;</code></pre>
+
+<p>If you think this is too easy, here is another neat proof spotted by my friend
+Avital Steinitz while teaching a Signals and Systems course.</p>
+
+<blockquote>
+  <p>Consider the function <script type="math/tex">f : \mathbb{R} \to \mathbb{C}</script> given by the rule
+<script type="math/tex">f(t) = e^{i2\pi t}</script>, also known as the phaser with frequency <script type="math/tex">2\pi</script>. We
+show that this function is in fact the constant function <script type="math/tex">1</script>:</p>
+</blockquote>
+
+<script type="math/tex; mode=display">\forall t \in \mathbb{R}: 
+f(t) = e^{i2\pi t} = \left(e^{i2\pi}\right)^t = 1^t = 1.</script>
+
+<p class="float-right"><script type="math/tex">\square</script></p>
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2011/06/15/omni-take-two/';
+    this.page.identifier = '';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>

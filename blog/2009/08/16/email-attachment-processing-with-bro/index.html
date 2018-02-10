@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - Email Attachment Processing with Bro
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+Email Attachment Processing with Bro
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2009-08-16
+</span>
+<span class='label radius warning'>
+<i class='fa fa-calendar-plus-o'></i>
+2011-04-13
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+bro
+</span>
+<span class='label radius secondary'>
+email
+</span>
+<span class='label radius secondary'>
+intrusion detection
+</span>
+<span class='label radius secondary'>
+SMTP
+</span>
+<span class='label radius secondary'>
+traffic analysis
+</span>
+</div>
+</div>
+<p>Malware that spreads via email is nothing new. Particularly
+<a href="http://www.scribd.com/doc/13731776/Tracking-GhostNet-Investigating-a-Cyber-Espionage-Network">targeted</a> <a href="http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-746.html">attacks</a> against politically sensitive
+institutions or individuals consist of well socially engineered mails and often
+ship with custom <a href="http://www.defcon.org/html/defcon-17/dc-17-speakers.html#Richard">0-day malware</a> in the form of email attachments. In
+order to extract such malicious attachments, I wrote a
+<a href="http://www.bro-ids.org">Bro</a> policy script which records suspicious
+attachments to disk for later analysis. A possible application scenario would
+be to scan office documents for malicious JavaScript or executables for
+viruses. Another option would be <a href="http://wiki.github.com/sethhall/bro_scripts/the-malware-hash-registry-and-bro-ids">hashing the attachment directly in
+Bro</a> and comparing it against a publicly available registry, such
+as Seth Hall illustrates for HTTP traffic.</p>
+
+<p>The script to extract attachments works by registering a callback handler for
+the <code>Content-Type</code> header in an SMTP session. Then both MIME type and the
+name of the attachment is examined. If either looks suspicious, Bro generates a
+<code>SensitiveMIMEType</code> or <code>SensitiveExtension</code>
+<a href="http://blog.icir.org/2008/03/telling-bro-what-important.html">NOTICE</a>.
+The user can customize the the analyzer behavior in many ways. To change the
+directory where the attachments are stored on disk, one can redefine the
+<code>attachment_dir</code> variable:</p>
+
+<pre><code class="language-bro">redef Email::attachment_dir = "foo";&#x000A;</code></pre>
+
+<p>The script stores the attachments by default, but this behavior can easily
+changed via:</p>
+
+<pre><code class="language-bro"># Whether attachments with sensitive MIME types should be stored.&#x000A;redef Email::store_sensitive_mime_types = F;&#x000A;&#x000A;# Whether attachments with sensitive file extensions should be stored.&#x000A;redef Email::store_sensitive_extensions = F;&#x000A;</code></pre>
+
+<p>It is also possible to restrict or extend the regular expression used to
+determine whether an attachment is sensitive or not:</p>
+
+<pre><code class="language-bro"># Deem only application\/octet-stream as suspicious.&#x000A;redef Email::sensitive_mime_types = /application\/octet-stream/;&#x000A;&#x000A;# Restrict sensitive extensions to office documents and executables.&#x000A;redef Email::sensitive_extensions =&#x000A;    /[pP][dD][fF]$/&#x000A;  | /[dD][oO][cC][xX]?$/&#x000A;  | /[xX][lL][sS]$/&#x000A;  | /[pP][pP][sStT]$/&#x000A;  | /[eE][xX][eE]$/&#x000A;  | /[cC][oO][mM]$/&#x000A;  | /[bB][aA][tT]$/;&#x000A;</code></pre>
+
+<p>The script generates a file of the form <code>ID-filename</code> where <code>ID</code> is a unique
+attachment ID that is monotonically increasing and <code>filename</code> is the name of
+the attachment or just the MIME type if the attachment does not have a name.</p>
+
+<p>The script is part of the <a href="http://git.bro-ids.org/bro-scripts.git">Bro scripts</a>
+git repository where you can always <a href="http://git.bro-ids.org/bro-scripts.git/blob_plain/HEAD:/mime-attachment.bro">download the most recent version</a>.</p>
+
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2009/08/16/email-attachment-processing-with-bro/';
+    this.page.identifier = '';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>

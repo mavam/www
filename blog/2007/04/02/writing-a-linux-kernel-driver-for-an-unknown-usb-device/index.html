@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - Writing a Linux Kernel Driver for an Unknown USB Device
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+Writing a Linux Kernel Driver for an Unknown USB Device
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2007-04-02
+</span>
+<span class='label radius warning'>
+<i class='fa fa-calendar-plus-o'></i>
+2011-06-01
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+linux
+</span>
+<span class='label radius secondary'>
+reverse engineering
+</span>
+<span class='label radius secondary'>
+usb
+</span>
+</div>
+</div>
+<p>This article explains the creation process of a Linux kernel device driver for
+an undocumented USB device. After having reverse-engineered the USB
+communication protocol, I present the architecture of the USB device driver. In
+addition to the kernel driver I introduce a simple user-space tool that can be
+used to control the device. Although I have to delve into the specifics of a
+particular device, the process can be applied to other USB devices as well.</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p class="float-right margin-left-1"><img src="dreamcheeky-ml.jpg" alt="Dream Cheeky USB missile launcher" /></p>
+<p>Recently, I found a fancy device while searching eBay: the <a href="http://www.dreamcheeky.com">DreamCheeky USB
+missile launcher</a>.  The manufacturer neither
+provides a Linux driver nor publishes the USB protocol specification. Only a
+binary Windows driver is available, turning the missile launcher into complete
+“black-box” for Linux users. What a challenge! Let’s get the damn gadget
+working under Linux.</p>
+
+<p>To facilitate USB programming, the USB interface is accessible from user-space
+with <a href="http://libusb.sourceforge.net">libusb</a>, a programming API concealing
+low-level kernel interaction. The proper way to write a device driver for the
+missile launcher would hence be to leverage this API and ignore any kernel
+specifics. Nevertheless, I wanted to get involved with kernel programming and
+decided thus to write a kernel module despite the increased complexity and
+higher effort.</p>
+
+<p>The remainder of this article is structured as follows. After pointing to some
+related work, I give a quick USB overview. Thereafter, I present the
+reverse-engineering process to gather the unknown USB commands steering the
+missile launcher. To come up with a full-featured kernel device driver, I
+describe the kernel module architecture which incorporates the derived control
+commands. Finally, I demonstrate a simple tool in user-space that makes use of
+the driver.</p>
+
+<h2 id="related-work">Related Work</h2>
+
+<p>Apparently I have not been the only one who played with this gadget. However,
+none of the existing approaches I have encountered pursue the creation of a
+Linux device driver for the <em>kernel</em>. <a href="http://kim.tensta.gannert.se/projects/launcher">The Launcher
+Library</a> provides a user-space
+library based on libusb. <a href="http://fatal.se/fulhack/ahmissile">AHmissile</a> is a
+GTK+ control tool; a ncurses application is
+<a href="http://www.amctrl.com/rocketlauncher.html">available</a>, too.
+Apple users get happy with the <a href="http://dgwilson.wordpress.com">USB missile launcher
+NZ</a> project. Moreover, the python implementation
+<a href="http://scott.weston.id.au/software/pymissile">pymissile</a> supports a missile
+launcher of a different manufacturer. The author combined the missile
+launcher with a webcam in order to to create an automated sentry guard reacting
+on motion. I will return to these funky ideas later.</p>
+
+<h2 id="usb-primer">USB Primer</h2>
+
+<p>The universal serial bus (USB) connects a host computer with numerous
+peripheral devices. It was designed to unify a wide range of slow and old buses
+(parallel, serial, and keyboard connections) into a single bus type. It is
+topologically not constructed as a bus, but rather as a tree of several
+point-to-point links. The USB host controller periodically polls each device if
+it has data to send. With this design, no device can send before it has not been
+asked to do so, resulting in a plug-and-play-friendly architecture.</p>
+
+<p><img src="usb-device.png" alt="USB device" class="float-right margin-left-1" />
+Linux supports two main types of drivers: host and device drivers. Let’s ignore
+the host component and have a deeper look at the USB device. As shown on the
+right side, a USB <em>device</em> consists of one or more <em>configurations</em>
+which in turn have one ore more <em>interfaces</em>.  These interfaces contain zero or
+more <em>endpoints</em> which make up the basic form of USB communication. An endpoint
+is always uni-directional, either from the host to the device (<em>OUT</em> endpoint)
+or from the device to the host (<em>IN</em> endpoint). There are four types of
+endpoints and each transmits data in a different way:</p>
+
+<ul>
+  <li>Control</li>
+  <li>Interrupt</li>
+  <li>Bulk</li>
+  <li>Isochronous</li>
+</ul>
+
+<p><em>Control endpoints</em> are generally used to control the USB device
+asynchronously, i.e. sending commands to it or retrieving status information
+about it. Every device possesses a control “endpoint 0” which is used by the USB
+core to initialize the device. <em>Interrupt endpoints</em> occur periodically
+and transfer small fixed-size data portions every time when the USB host asks
+the device. They are commonly used by mice and keyboards as primary transport
+method. As <em>bulk</em> and <em>isochronous endpoints</em> are not relevant for
+our missile launcher, I skip their discussion. An excellent introduction from a
+programming perspective gives the <a href="http://lwn.net/Kernel/LDD3">Linux Device
+Drivers</a> book. Below is
+some output from <code>lsusb -v</code> providing detailed information about the missile
+launcher.</p>
+
+<pre><code class="language-none">Bus 005 Device 004: ID 1941:8021&#x000A;Device Descriptor:&#x000A;  bLength                18&#x000A;  bDescriptorType         1&#x000A;  bcdUSB               1.10&#x000A;  bDeviceClass            0 (Defined at Interface level)&#x000A;  bDeviceSubClass         0&#x000A;  bDeviceProtocol         0&#x000A;  bMaxPacketSize0         8&#x000A;  idVendor           0x1941&#x000A;  idProduct          0x8021&#x000A;  bcdDevice            1.00&#x000A;  iManufacturer           0&#x000A;  iProduct                0&#x000A;  iSerial                 0&#x000A;  bNumConfigurations      1&#x000A;  Configuration Descriptor:&#x000A;    bLength                 9&#x000A;    bDescriptorType         2&#x000A;    wTotalLength           34&#x000A;    bNumInterfaces          1&#x000A;    bConfigurationValue     1&#x000A;    iConfiguration          0&#x000A;    bmAttributes         0xa0&#x000A;      Remote Wakeup&#x000A;    MaxPower              100mA&#x000A;    Interface Descriptor:&#x000A;      bLength                 9&#x000A;      bDescriptorType         4&#x000A;      bInterfaceNumber        0&#x000A;      bAlternateSetting       0&#x000A;      bNumEndpoints           1&#x000A;      bInterfaceClass         3 Human Interface Devices&#x000A;      bInterfaceSubClass      0 No Subclass&#x000A;      bInterfaceProtocol      0 None&#x000A;      iInterface              0&#x000A;        HID Device Descriptor:&#x000A;          bLength                 9&#x000A;          bDescriptorType        33&#x000A;          bcdHID               1.00&#x000A;          bCountryCode            0 Not supported&#x000A;          bNumDescriptors         1&#x000A;          bDescriptorType        34 Report&#x000A;          wDescriptorLength      52&#x000A;         Report Descriptors:&#x000A;           ** UNAVAILABLE **&#x000A;      Endpoint Descriptor:&#x000A;        bLength                 7&#x000A;        bDescriptorType         5&#x000A;        bEndpointAddress     0x81  EP 1 IN&#x000A;        bmAttributes            3&#x000A;          Transfer Type            Interrupt&#x000A;          Synch Type               None&#x000A;          Usage Type               Data&#x000A;        wMaxPacketSize     0x0008  1x 8 bytes&#x000A;        bInterval              10&#x000A;</code></pre>
+
+<p>The output is structured and indented like a typical USB device. First, vendor
+and product ID uniquely identify this USB gadget. These IDs are used by the USB
+core to decide which driver to give a device to. Moreover, hotplug scripts can
+decide which driver to load when a particular device is plugged in. Next, we
+can read off the maximum power usage (100 mA) in the configuration section. The
+subordinate interface contains apparently one interrupt IN endpoint (besides
+the control endpoint 0) that can be accessed at address <code>0x81</code>. Because it is
+an IN endpoint, it returns status information from the device. To handle the
+incoming data we first need to understand the missile launcher control
+protocol.</p>
+
+<h2 id="reverse-engineering-the-usb-protocol">Reverse-Engineering the USB Protocol</h2>
+
+<p>The first step involves reverse-engineering (or “snooping”) the USB
+communication protocol spoken by the binary Windows driver. One approach would
+be to consign the device in a VMware and capture the exchanged data on the host
+system. But since several tools to analyze USB traffic already exist, the easier
+solution is to rely on one of those. The most popular free application appears
+to be <a href="http://sourceforge.net/projects/usbsnoop">SnoopyPro</a>.  Surprisingly I do
+not have Windows box at hand, so I had to install the binary driver together
+with SnoopyPro in a VMware.</p>
+
+<p>In order to capture all relevant USB data and intercept all device control
+commands, the missile launcher has to perform every possible action while being
+monitored: moving the two axes alone and together, shooting, and moving to the
+limiting axes boundaries (which will trigger a notification that the axes
+cannot be moved further in one direction). While analyzing the <a href="/dump/snoopy-pro.xml">SnoopyPro
+dump</a>, one can easily discover the control commands sent
+to the missile launcher. As an example, the Figure below shows an 8 byte
+transfer buffer.  When moving the missile launcher to the right, the buffer
+holds <code>0x00000008</code>. Moving the launcher up changes the buffer contents to
+<code>0x00000001</code>. It is apparently very easy to deduce the control bytes used to
+control the missile launcher. Unless a “stop” command (<code>0x00000000</code>) is sent to
+the device, it keeps the state of the last command.  This means if the “down”
+command is issued, the device continues to turn until it receives a new
+command. If it is not possible to move further, the motor keeps up running and
+the gears crack with a unbearable painful sound.  Upon closer examination, the
+interrupt IN endpoint buffer varies depending on the current device position.
+Whensoever an axis reaches its boundary (and creates the maddening sound), the
+device detects it and changes the interrupt buffer contents accordingly. This
+means of notification can be leveraged by the kernel developer to implement a
+boundary checking mechanism sending a stop command as soon as the missile
+launcher runs against a wall.</p>
+
+<p><img src="snoopypro.png" alt="USB device" class="float-center shadow" /></p>
+
+<p>Here is an excerpt of the driver source showing the complete list of control
+commands that can be sent to the device.</p>
+
+<pre><code class="language-c">#define ML_STOP         0x00&#x000A;#define ML_UP           0x01&#x000A;#define ML_DOWN         0x02&#x000A;#define ML_LEFT         0x04&#x000A;#define ML_RIGHT        0x08&#x000A;#define ML_UP_LEFT      (ML_UP | ML_LEFT)&#x000A;#define ML_DOWN_LEFT    (ML_DOWN | ML_LEFT)&#x000A;#define ML_UP_RIGHT     (ML_UP | ML_RIGHT)&#x000A;#define ML_DOWN_RIGHT   (ML_DOWN | ML_RIGHT)&#x000A;#define ML_FIRE         0x10&#x000A;</code></pre>
+
+<p>The following bytes appear in the buffer of the interrupt IN endpoint (shown as
+comment) and indicate that a boundary has been reached.</p>
+
+<pre><code class="language-c">#define ML_MAX_UP       0x80        /* 80 00 00 00 00 00 00 00 */&#x000A;#define ML_MAX_DOWN     0x40        /* 40 00 00 00 00 00 00 00 */&#x000A;#define ML_MAX_LEFT     0x04        /* 00 04 00 00 00 00 00 00 */&#x000A;#define ML_MAX_RIGHT    0x08        /* 00 08 00 00 00 00 00 00 */&#x000A;</code></pre>
+
+<p>With all required control information in place, let’s now adopt the programmer’s
+perspective and delve into the land of kernel programming.</p>
+
+<h2 id="the-device-driver">The Device Driver</h2>
+
+<p>Writing code for the kernel is an art by itself and I will only touch the tip of
+the iceberg. To get a deeper understanding I recommend the books <a href="http://lwn.net/Kernel/LDD3">Linux Device
+Drivers</a> and <a href="http://www.oreilly.com/catalog/understandlk">Understanding the Linux
+Kernel</a>.</p>
+
+<p>As for many other disciplines the separation of <em>mechanism</em> and <em>policy</em> is a
+fundamental paradigm a programmer should follow. The mechanism provides the
+capabilities whereas the policy expresses rules how to use those capabilities.
+Different environments generally access the hardware in different ways. It is
+hence imperative to write <em>policy-neutral</em> code: a driver should make the
+hardware available without imposing constraints.</p>
+
+<p>A nice feature of Linux is the ability to dynamically link object code to the
+running kernel. That piece of object code is called a kernel <em>module</em>.
+Linux distinguishes between three basic device types that a module can
+implement:</p>
+
+<ul>
+  <li>Character devices</li>
+  <li>Block devices</li>
+  <li>Network interfaces</li>
+</ul>
+
+<p>A <em>Character (char) device</em> transfers a stream of bytes from and to the
+user process. The module therefore implements system calls such as
+<em>open</em>, <em>close</em>, <em>read</em>, <em>write</em> and <em>ioctl</em>.
+A char device looks like a file, except that file is “seekable” and most devices
+operate sequentially. Examples for char devices are the text console
+(<code>/dev/console</code>) and serial ports (<code>/dev/ttyS0</code>). Most simple
+hardware devices are driven by char drivers. Discussing <em>block devices</em>
+and <em>network interfaces</em> goes beyond the scope of this article, please
+refer to the specified literature for details.</p>
+
+<p>Besides this classification, other orthogonal ways exist. As an example, USB
+devices are implemented as USB modules but can show up as char devices (like
+our missile launcher), block devices (USB sticks, say), or network interfaces
+(a USB Ethernet interface). Let us now look at the rough structure of a USB
+kernel module and then turn to particularities of the missile launcher.</p>
+
+<pre><code class="language-c">struct usb_ml {&#x000A;    /* One structure for each connected device */&#x000A;};&#x000A;&#x000A;static struct usb_device_id ml_table [] = {&#x000A;    { USB_DEVICE(ML_VENDOR_ID, ML_PRODUCT_ID) },&#x000A;    { }&#x000A;};&#x000A;&#x000A;static int ml_open(struct inode *inode, struct file *file)&#x000A;{&#x000A;    /* open syscall */&#x000A;}&#x000A;static int ml_release(struct inode *inode, struct file *file)&#x000A;{&#x000A;    /* close syscall */&#x000A;}&#x000A;&#x000A;static ssize_t ml_write(struct file *file, const char __user *user_buf, size_t&#x000A;        count, loff_t *ppos);&#x000A;{&#x000A;    /* write syscall */&#x000A;}&#x000A;&#x000A;static struct file_operations ml_fops = {&#x000A;    .owner =    THIS_MODULE,&#x000A;    .write =    ml_write,&#x000A;    .open =     ml_open,&#x000A;    .release =  ml_release,&#x000A;};&#x000A;&#x000A;static int ml_probe(struct usb_interface *interface, const struct usb_device_id&#x000A;        *id)&#x000A;{&#x000A;    /* called when a USB device is connected to the computer. */&#x000A;}&#x000A;&#x000A;static void ml_disconnect(struct usb_interface *interface)&#x000A;{&#x000A;    /* called when unplugging a USB device. */&#x000A;}&#x000A;&#x000A;static struct usb_driver ml_driver = {&#x000A;    .name = "missile_launcher",&#x000A;    .id_table = ml_table,&#x000A;    .probe = ml_probe,&#x000A;    .disconnect = ml_disconnect,&#x000A;};&#x000A;&#x000A;static int __init usb_ml_init(void)&#x000A;{&#x000A;    /* called on module loading */&#x000A;}&#x000A;&#x000A;static void __exit usb_ml_exit(void)&#x000A;{&#x000A;    /* called on module unloading */&#x000A;}&#x000A;&#x000A;module_init(usb_ml_init);&#x000A;module_exit(usb_ml_exit);&#x000A;</code></pre>
+
+<p>Apart from some global variables, helper functions, and interrupt handlers,
+this is already the entire kernel module! But let’s start off step by step. The
+USB driver is represented by a <code>struct usb_driver</code> containing some function
+callbacks and variables identifying the USB driver. When the module is loaded
+via the <em>insmod</em> program, the <code>__init usb_ml_init(void)</code> function is executed
+which registers the driver with the USB subsystem. When the module is unloaded,
+<code>__exit usb_ml_exit(void)</code> is called which deregisters the driver from the USB
+subsystem. The <code>__init</code> and <code>__exit</code> tokens indicate that these functions are
+only called at initialization and exit time. Having loaded the module, the
+<em>probe</em> and <em>disconnect</em> function callbacks are set up. In the probe function
+callback, which is called when the device is being plugged in, the driver
+initializes any local data structures used to manage the USB device. For
+example, it allocates memory for the <code>struct usb_ml</code> which contains run-time
+status information about the connected device. Here is an excerpt from the
+beginning of the function:</p>
+
+<pre><code class="language-c">static int ml_probe(struct usb_interface *interface,&#x000A;                    const struct usb_device_id *id)&#x000A;{&#x000A;    struct usb_device *udev = interface_to_usbdev(interface);&#x000A;    struct usb_ml *dev = NULL;&#x000A;    struct usb_host_interface *iface_desc;&#x000A;    struct usb_endpoint_descriptor *endpoint;&#x000A;    int i, int_end_size;&#x000A;    int retval = -ENODEV;&#x000A;&#x000A;    if (! udev)&#x000A;    {&#x000A;        DBG_ERR("udev is NULL");&#x000A;        goto exit;&#x000A;    }&#x000A;&#x000A;    dev = kzalloc(sizeof(struct usb_ml), GFP_KERNEL);&#x000A;    if (! dev)&#x000A;    {&#x000A;        DBG_ERR("cannot allocate memory for struct usb_ml");&#x000A;        retval = -ENOMEM;&#x000A;        goto exit;&#x000A;    }&#x000A;&#x000A;    dev-&gt;command = ML_STOP;&#x000A;&#x000A;    init_MUTEX(&amp;dev-&gt;sem);&#x000A;    spin_lock_init(&amp;dev-&gt;cmd_spinlock);&#x000A;&#x000A;    dev-&gt;udev = udev;&#x000A;    dev-&gt;interface = interface;&#x000A;    iface_desc = interface-&gt;cur_altsetting;&#x000A;&#x000A;    /* Set up interrupt endpoint information. */&#x000A;    for (i = 0; i &lt; iface_desc-&gt;desc.bNumEndpoints; ++i)&#x000A;    {&#x000A;        endpoint = &amp;iface_desc-&gt;endpoint[i].desc;&#x000A;&#x000A;        if (((endpoint-&gt;bEndpointAddress &amp; USB_ENDPOINT_DIR_MASK) == USB_DIR_IN)&#x000A;                &amp;&amp; ((endpoint-&gt;bmAttributes &amp; USB_ENDPOINT_XFERTYPE_MASK) ==&#x000A;                    USB_ENDPOINT_XFER_INT))&#x000A;            dev-&gt;int_in_endpoint = endpoint;&#x000A;&#x000A;    }&#x000A;    if (! dev-&gt;int_in_endpoint)&#x000A;    {&#x000A;        DBG_ERR("could not find interrupt in endpoint");&#x000A;        goto error;&#x000A;    }&#x000A;&#x000A;    /* ... */&#x000A;&#x000A;    /* We can register the device now, as it is ready. */&#x000A;    retval = usb_register_dev(interface, &amp;ml_class);&#x000A;&#x000A;    /* ... */&#x000A;}&#x000A;</code></pre>
+
+<p>You might have noted the use of <code>goto</code> statements in this code snippet. While
+<code>goto</code> statements are generally <a href="http://www.acm.org/classics/oct95">considered
+harmful</a>, kernel programmers, however,
+employ <code>goto</code> statements to bundle error handling at a central place,
+eliminating complex, highly-indented logic. The probe function allocates memory
+for the internal device structure, initializes semaphores and spin-locks, and
+sets up endpoint information.  Somewhat later in the function, the device is
+being registered. The device is now ready to be accessed from user space via
+system calls. I will discuss the simple user-space tool accessing the missile
+launcher shortly. Yet before that, I present the communication primitives used
+to send data to the device.</p>
+
+<p>The Linux USB implementation uses a <em>USB request block</em> (URB) as “data
+carrier” to communicate with USB devices. URBs are like data messages that are
+sent asynchronously from and to endpoints. Remember that the USB standard
+includes four types of endpoints. Likewise, four different types of URBs exist,
+namely control, interrupt, bulk, and isochronous URBs. Once an URB has been
+allocated and initialized by the driver, it is be submitted to the USB core
+which forwards it to the device. If the URB was successfully delivered to the
+USB core, a <em>completion handler</em> is executed. Then the USB core returns
+control to the device driver.</p>
+
+<p>As our missile launcher features two endpoints (endpoint 0 and the interrupt
+endpoint), we have to deal with both control and interrupt URBs. The
+reverse-engineered commands are basically packed into an control URB and then
+sent out to the device. Also, we continuously receive status information from
+the periodic interrupt URBs. For example, to send simple data to the missile
+launcher, the function <code>usb_control_msg</code> is used:</p>
+
+<pre><code class="language-c">memset(&amp;buf, 0, sizeof(buf));&#x000A;buf[0] = cmd;&#x000A;&#x000A;/* The interrupt-in-endpoint handler also modifies dev-&gt;command. */&#x000A;spin_lock(&amp;dev-&gt;cmd_spinlock);&#x000A;dev-&gt;command = cmd;&#x000A;spin_unlock(&amp;dev-&gt;cmd_spinlock);&#x000A;&#x000A;retval = usb_control_msg(dev-&gt;udev,&#x000A;        usb_sndctrlpipe(dev-&gt;udev, 0),&#x000A;        ML_CTRL_REQUEST,&#x000A;        ML_CTRL_REQEUST_TYPE,&#x000A;        ML_CTRL_VALUE,&#x000A;        ML_CTRL_INDEX,&#x000A;        &amp;buf,&#x000A;        sizeof(buf),&#x000A;        HZ * 5);&#x000A;&#x000A;if (retval &lt; 0)&#x000A;{&#x000A;    DBG_ERR("usb_control_msg failed (%d)", retval);&#x000A;    goto unlock_exit;&#x000A;}&#x000A;</code></pre>
+
+<p>The command <code>cmd</code> is inserted into the buffer <code>buf</code>
+containing the data to be sent to the device. If the URB completes successfully,
+the corresponding handler is executed. It performs nothing fancy, except telling
+the driver that we launched a (yet uncorrected) command via the <em>write</em>
+syscall:</p>
+
+<pre><code class="language-c">static void ml_ctrl_callback(struct urb *urb, struct pt_regs *regs)&#x000A;{&#x000A;    struct usb_ml *dev = urb-&gt;context;&#x000A;    dev-&gt;correction_required = 0;&#x000A;}&#x000A;</code></pre>
+
+<p>We do not want the missile launcher hardware to be damaged by neither sending
+improper commands nor sending any commands when it reached an axis boundary.
+Ideally, whenever an axis boundary is reached (meaning that the missile launcher
+cannot turn further in one direction), the device should stop the movement in
+the particular direction. The completion handler of the interrupt URB turns out
+to be the right place to implement this idea:</p>
+
+<pre><code class="language-c">static void ml_int_in_callback(struct urb *urb, struct pt_regs *regs)&#x000A;{&#x000A;        /* ... */&#x000A;&#x000A;        if (dev-&gt;int_in_buffer[0] &amp; ML_MAX_UP &amp;&amp; dev-&gt;command &amp; ML_UP)&#x000A;        {&#x000A;            dev-&gt;command &amp;= ~ML_UP;&#x000A;            dev-&gt;correction_required = 1;&#x000A;        } else if (dev-&gt;int_in_buffer[0] &amp; ML_MAX_DOWN &amp;&amp;&#x000A;                dev-&gt;command &amp; ML_DOWN)&#x000A;        {&#x000A;            dev-&gt;command &amp;= ~ML_DOWN;&#x000A;            dev-&gt;correction_required = 1;&#x000A;        }&#x000A;&#x000A;        if (dev-&gt;int_in_buffer[1] &amp; ML_MAX_LEFT &amp;&amp; dev-&gt;command &amp; ML_LEFT)&#x000A;        {&#x000A;            dev-&gt;command &amp;= ~ML_LEFT;&#x000A;            dev-&gt;correction_required = 1;&#x000A;        } else if (dev-&gt;int_in_buffer[1] &amp; ML_MAX_RIGHT &amp;&amp;&#x000A;                dev-&gt;command &amp; ML_RIGHT)&#x000A;        {&#x000A;            dev-&gt;command &amp;= ~ML_RIGHT;&#x000A;            dev-&gt;correction_required = 1;&#x000A;        }&#x000A;&#x000A;        /* ... */&#x000A;}&#x000A;</code></pre>
+
+<p>The above code is used to set the <code>correction_required</code> variable which triggers
+a “correction” control URB: this URB contains simply the last command without
+the harming bit. Remember that the URB callback functions run in <em>interrupt
+context</em> and thus should not perform any memory allocations, hold semaphores,
+or cause anything putting the process to sleep. With this automatic correction
+mechanism, the missile launcher is shielded from improper use. Again, it does
+not impose policy constraints, it protects only the device.</p>
+
+<h2 id="user-space-control">User-Space Control</h2>
+
+<p>For most folks fun starts in here. One doesn’t kick the bucket when
+dereferencing NULL-pointers and the good old libc is available, too. After
+having loaded the kernel module, the missile launcher is accessible via
+<code>/dev/ml0</code>. A second missile launcher would show up as <code>/dev/ml1</code> and so on.
+Here is a very simple application to control the device:</p>
+
+<pre><code class="language-c">#include &lt;fcntl.h&#x000A;#include &lt;stdio.h&#x000A;#include &lt;stdlib.h&#x000A;#include &lt;unistd.h&#x000A;&#x000A;#define DEFAULT_DEVICE      "/dev/ml0"&#x000A;#define DEFAULT_DURATION    800&#x000A;&#x000A;#define ML_STOP         0x00&#x000A;#define ML_UP           0x01&#x000A;#define ML_DOWN         0x02&#x000A;#define ML_LEFT         0x04&#x000A;#define ML_RIGHT        0x08&#x000A;#define ML_FIRE         0x10&#x000A;&#x000A;#define ML_FIRE_DELAY   5000&#x000A;&#x000A;void send_cmd(int fd, int cmd)&#x000A;{&#x000A;    int retval = 0;&#x000A;&#x000A;    retval = write(fd, &amp;cmd, 1);&#x000A;    if (retval &lt; 0)&#x000A;        fprintf(stderr, "an error occured: %d\n", retval);&#x000A;}&#x000A;&#x000A;static void usage(char *name)&#x000A;{&#x000A;    fprintf(stderr,&#x000A;            "\nusage: %s [-mslrudfh] [-t msecs]\n\n"&#x000A;            "  -m      missile launcher [/dev/ml0]\n"&#x000A;            "  -s      stop\n"&#x000A;            "  -l      turn left\n"&#x000A;            "  -r      turn right\n"&#x000A;            "  -u      turn up\n"&#x000A;            "  -d      turn down\n"&#x000A;            "  -f      fire\n"&#x000A;            "  -t      specify duration in milli seconds\n"&#x000A;            "  -h      display this help\n\n"&#x000A;            "notes:\n"&#x000A;            "* it is possible to combine the directions of the two axes, e.g.\n"&#x000A;            "  '-lu' send_cmds the missile launcher up and left at the same time.\n"&#x000A;            "" , name);&#x000A;    exit(1);&#x000A;}&#x000A;&#x000A;int main(int argc, char *argv[])&#x000A;{&#x000A;    char c;&#x000A;    int fd;&#x000A;    int cmd = ML_STOP;&#x000A;    int duration = DEFAULT_DURATION;&#x000A;    char *dev = DEFAULT_DEVICE;&#x000A;&#x000A;    if (argc &lt; 2)&#x000A;        usage(argv[0]);&#x000A;&#x000A;    while ((c = getopt(argc, argv, "mslrudfht:")) != -1)&#x000A;    {&#x000A;        switch (c)&#x000A;        {&#x000A;            case 'm': dev = optarg;&#x000A;                      break;&#x000A;            case 'l': cmd |= ML_LEFT;&#x000A;                      break;&#x000A;            case 'r': cmd |= ML_RIGHT;&#x000A;                      break;&#x000A;            case 'u': cmd |= ML_UP;&#x000A;                      break;&#x000A;            case 'd': cmd |= ML_DOWN;&#x000A;                      break;&#x000A;            case 'f': cmd = ML_FIRE;&#x000A;                      break;&#x000A;            case 's': cmd = ML_STOP;&#x000A;                      break;&#x000A;            case 't': duration = atoi(optarg);&#x000A;                      break;&#x000A;            default: usage(argv[0]);&#x000A;        }&#x000A;    }&#x000A;&#x000A;    fd = open(dev, O_RDWR);&#x000A;    if (fd == -1)&#x000A;    {&#x000A;        perror("open");&#x000A;        exit(1);&#x000A;    }&#x000A;&#x000A;    send_cmd(fd, cmd);&#x000A;&#x000A;    if (cmd &amp; ML_FIRE)&#x000A;        duration = ML_FIRE_DELAY;&#x000A;    else if (cmd == ML_UP || cmd == ML_DOWN)&#x000A;        duration /= 2;&#x000A;    usleep(duration * 1000);&#x000A;&#x000A;    send_cmd(fd, ML_STOP);&#x000A;&#x000A;    close(fd);&#x000A;&#x000A;    return EXIT_SUCCESS;&#x000A;}&#x000A;</code></pre>
+
+<p>This tool, let’s name it <code>ml_control</code>, allows the user to send data to the
+device via the <em>write</em> syscall. For example, the device moves three seconds up
+and left with <code>./ml_control -ul -t 3000</code>, shoots with <code>./ml_control -f</code>, or
+stop with <code>./ml_control -s</code>.  Consider the code as proof of concept, of course
+more sophisticated applications are imaginable.</p>
+
+<p><img src="hands-up.png" alt="Hands up!" class="float-right margin-left-1" />
+Just for fun, I mounted an external iSight camera on top of the missile
+launcher. Like the author of <a href="http://scott.weston.id.au/software/pymissile">pymissile</a> suggests, creating an
+automated sentry based on motion detection is a funky next step. Whenever a
+movement in the current view is detected, the missile launcher should
+automatically align itself and fire a missile. Due to the lack of time, I could
+not pursue this project. Maybe someday, in the unlikely event of getting bored,
+I will return to this idea.  Nevertheless, my friend Thorsten Röder quickly
+hacked together a Qt GUI. It somehow resembles an early version of Quake…</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>In this article, I frame the creation of a USB device driver for the Linux
+kernel. At first I reverse-engineer the unknown USB protocol by intercepting
+all USB traffic to and from the device with the Windows driver. Having captured
+the complete communication primitives, I explain how to build a USB kernel
+driver. Finally, a proof-of-conecpt user-space tool is presented that lays the
+foundation stone for further fancy ideas. Future work touches topics like
+augmenting the missile launcher with a video camera or mounting it on arbitrary
+devices. The code from this article and a full implementation of the device
+driver is available at my <a href="https://github.com/mavam/ml-driver">github repository</a>.</p>
+
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2007/04/02/writing-a-linux-kernel-driver-for-an-unknown-usb-device/';
+    this.page.identifier = '2104120605222853075';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>

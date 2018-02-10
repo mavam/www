@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - Better NIDS Performance by Tracking Roaming Users
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+Better NIDS Performance by Tracking Roaming Users
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2011-06-22
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+bro
+</span>
+<span class='label radius secondary'>
+cluster
+</span>
+<span class='label radius secondary'>
+intrusion detection
+</span>
+<span class='label radius secondary'>
+sidejacking
+</span>
+<span class='label radius secondary'>
+traffic analysis
+</span>
+</div>
+</div>
+<p><a href="http://codebutler.com/firesheep">Firesheep</a> had a noticeable impact on several
+large Web 2.0 players: Twitter, FaceBook, GitHub, Dropbox, Slicehost, and
+others now offer either opt-in HTTPS or have switched to a full HTTPS
+deployment in order to protect their users from session hijacking attacks. In
+an <a href="/blog/2010/10/taming-the-sheep-detecting-sidejacking-with-bro/">earlier article</a> I described how to write a
+<a href="http://www.bro-ids.org">Bro</a> script that passively detects Firesheep. In this
+article, I discuss how tracking roaming users in DHCP-enabled networks can
+improve the false positive rate of network intrusion detection system (NIDS)
+detectors of this kind.</p>
+
+<h2 id="passive-detection">Passive Detection</h2>
+
+<p>Passive monitoring is less intrusive than active approaches, such as the
+<a href="http://www.zscaler.com/blacksheep.html">Blacksheep</a> Firefox extension which sends fake cookies and
+looks whether a Firesheep user tries to utilize them, or the
+<a href="http://notendur.hi.is/~gas15/FireShepherd">FireShepherd</a> command-line utility which simply floods the
+network with zillions of fake cookies with the goal to crash Firesheep (and
+thereby the browser). In general, such active “defense” mechanisms do not scale
+to larger networks and may have even undesirable side-effects in affecting
+their users. Therefore, I believe that purely passive detection mechanisms are
+more attractive in practice.</p>
+
+<p>However, false positives are an issue with the passive sidejacking detector.
+If a network uses DHCP, chances are that the same user receives a different IP
+addresses at some point in time. But when the sidejacking detector has not yet
+expired the cookie value associated with the old IP address and the cookie
+reappears under a new IP address, a false alarm is generated. This happens due
+to the lack of a crisp user definition: IP address are ephemeral in DHCP
+networks and cannot be used to analyze user activity over time without taking
+roaming into account.</p>
+
+<h2 id="reducing-false-positives">Reducing False Positives</h2>
+
+<p>How should we ? The key insight is to keep track of all IP addresses
+under which the same user appears, where a user is uniquely identified by its
+MAC address. You might think that this is obvious, so why not always use MAC
+addresses? For small coffeeshop networks, this would probably work just fine: a
+typical deployment has a single broadcast domain and the NIDS can be part of
+it. However, the issue is with larger networks, partitioned into several
+broadcast domains, where traffic from access points is aggregated over a
+hierarchy of switches. In such scenarios, the NIDS might not even see the MAC
+addresses of the users because it is deployed upstream (usually at the border
+or DMZ).</p>
+
+<p>With <a href="http://www.bro-ids.org">Bro</a>, it is possible to simply <a href="http://www.icir.org/robin/papers/acsac05.pdf">ship</a>
+the missing layer-2 information to the machine on which the detector runs. This
+works in monitoring infrastructures consisting of network-wide <em>sensors</em> (or
+<em>worker</em> nodes) which can see and forward link-layer events to a central
+<em>manager</em> nodes that runs the scripts processing the events. Our <a href="/papers/raid07.pdf">NIDS cluster
+paper</a> has more details on this architecture.</p>
+
+<p>Assuming that we can see the relevant broadcast traffic, how do we learn
+IP-to-MAC mappings of roaming users?</p>
+
+<ol>
+  <li>
+    <p>Clearly, we can learn IP-to-MAC mappings by monitoring <strong>DHCP</strong> traffic. In
+particular, the DHCP ACKs contain the binding between the two addresses, as
+discussed in the <a href="/blog/2010/10/taming-the-sheep-detecting-sidejacking-with-bro/">previous sidejacking article</a>.</p>
+  </li>
+  <li>
+    <p>I was pleased when Jordi Ros-Giralt from Reservoir Labs sent me a patch that
+incorporates another type of broadcast traffic: <strong>ARP</strong>. Similar to DHCP
+ACKs, ARP replies also contain the mapping from IP to MAC address.</p>
+  </li>
+</ol>
+
+<p>Bro’s new <a href="http://git.bro-ids.org/bro-scripts.git/blob_plain/HEAD:/roam.bro"><code>roam.bro</code></a> script keeps track of these mappings in two
+global tables:</p>
+
+<pre><code class="language-bro">global ip_to_mac: table[addr] of string&#x000A;    &amp;read_expire = alias_expiration &amp;synchronized;&#x000A;&#x000A;global mac_to_ip: table[string] of set[addr]&#x000A;    &amp;read_expire = alias_expiration &amp;synchronized;&#x000A;</code></pre>
+
+<p>Event handlers for the <code>dhcp_ack</code> and <code>arp_reply</code> events populate these tables.
+For example, here is the DHCP ACK handler:</p>
+
+<pre><code class="language-bro">event DHCP::dhcp_ack(c: connection, msg: dhcp_msg, mask: addr,&#x000A;    router: dhcp_router_list, lease: interval, serv_addr: addr)&#x000A;{&#x000A;    local ip = msg$yiaddr;&#x000A;    local mac = msg$h_addr;&#x000A;&#x000A;    if (ip !in ip_to_mac)&#x000A;        ip_to_mac[ip] = mac;&#x000A;&#x000A;    if (mac !in mac_to_ip)&#x000A;        mac_to_ip[mac] = set() &amp;mergeable;&#x000A;&#x000A;    add mac_to_ip[mac][ip];&#x000A;}&#x000A;</code></pre>
+
+<p>One note for cluster users: the <code>&amp;synchronized</code> attribute makes sure that these
+tables have the same content across all nodes in a cluster. The <code>&amp;mergeable</code>
+attribute ensures that the address sets of the table <code>mac_to_ip</code> are correctly
+synchronized. That is, the local sets of the worker nodes are <em>merged</em> at the
+manager. You can think of it conceptually as creating the union of all sets
+instead of just using the value of the last update that would override previous
+updates. See our <a href="/papers/raid07.pdf">NIDS cluster paper</a> for more details about these
+attributes. At this point I should mention that I factored the roaming logic
+into a separate Bro script <code>roam.bro</code> so that other scripts can also make use
+of the provided data structures.</p>
+
+<p>Jordi’s patch also includes a new type of
+<a href="http://www.bro-ids.org/documentation/notices.html">Notice</a>,
+<code>SessionCookieRoamed</code>, which is generated when the same MAC address reappears
+under a different IP address. The Figure below shows the updated decision tree
+of the sidejacking detector; red rectangles correspond to a Notice and round
+nodes represent a decision.</p>
+
+<p><img src="sidejack-decision-tree.png" alt="Sidejacking detector logic after Jordi's
+update." class="float-center" /></p>
+
+<p>The latest version of the <a href="http://git.bro-ids.org/bro-scripts.git/blob_plain/HEAD:/sidejack.bro">detector</a> and the <a href="http://git.bro-ids.org/bro-scripts.git/blob_plain/HEAD:/roam.bro">roaming
+script</a> are available from the <a href="http://git.bro-ids.org/bro-scripts.git">Bro scripts git
+repository</a>.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This article describes how to reduce false positives of network-based detectors
+that base their notion of accountability on IP addresses. I show how flexible
+cross-layer NIDS, like Bro, can make such detectors more robust by
+incorporating link-layer context (i.e., MAC addresses). Although the running
+example is sidejacking, this improvement works in all scenarios where IP-level
+state is kept across TCP connections.</p>
+
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2011/06/22/better-nids-performance-by-tracking-roaming-users/';
+    this.page.identifier = '';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>

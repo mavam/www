@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='IE=edge' http-equiv='X-UA-Compatible'>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<title>
+Matthias Vallentin - Github Commit Emails with Full Diff of Changes
+</title>
+<link href='/css/main.css' rel='stylesheet'>
+<link href='/css/prism.css' rel='stylesheet'>
+<script src='/js/all.js'></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src='https://www.googletagmanager.com/gtag/js?id=UA-1823891-1'></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-1823891-1');
+</script>
+
+</head>
+<body>
+<main>
+<div class='grid-x grid-padding-x align-center'>
+<div class='cell medium-10 large-8'>
+<div class='content'>
+<h1>
+Github Commit Emails with Full Diff of Changes
+</h1>
+<div class='grid-x grid-padding-x align-justify margin-bottom-1'>
+<div class='cell shrink'>
+<span class='label radius'>
+<i class='fa fa-calendar-o'></i>
+2012-12-18
+</span>
+</div>
+<div class='cell shrink'>
+<span class='label radius secondary'>
+email
+</span>
+<span class='label radius secondary'>
+tools
+</span>
+<span class='label radius secondary'>
+ruby
+</span>
+</div>
+</div>
+<p><img src="octocat.jpeg" alt="Finally, diff emails for github!" class="float-right" />
+Folks who excessively use version control software like to track the progress
+of a project by just inspecting the commit messages which contain an
+incremental diff. Git users who manage their own repository infrastructure can
+already today enjoy Robin Sommer’s <a href="http://www.icir.org/robin/git-notifier/">git-notifier</a>, a small
+utility which sends out emails containing detailed diffs of the changes. It
+works by adding git-notifier as <a href="http://git-scm.com/book/en/Customizing-Git-Git-Hooks">post-receive
+hook</a> in the remote bare
+repository.</p>
+
+<p>When hosting the repository at github this doesn’t work anymore, because github
+does not offer direct access to the bare repository, but instead offers a
+predefined set of <a href="https://github.com/github/github-services">service hooks</a>.
+Alas, the <a href="https://github.com/github/github-services/blob/master/services/email.rb">existing email
+hook</a>
+cannot send out diffs, which greatly limits its usefulness. This poses the
+question: can github users still obtain emails with diffs?</p>
+
+<h2 id="git-notifier--github--gitdub">git-notifier + github = gitdub</h2>
+
+<p>Enter <a href="https://github.com/mavam/gitdub">gitdub</a>: a slim <a href="http://www.sinatrarb.com/">sinatra</a> HTTP server
+that utilizes github’s <a href="https://help.github.com/articles/post-receive-hooks">webhook
+API</a> to feed git-notifier.
+More specifically, when adding gitdub as webhook for your git repository, each
+push elicits a HTTP POST request with <a href="https://gist.github.com/2732972">details about the
+changeset</a>. Gitdub parses this data, updates
+its corresponding local bare git repository, and then invokes git-notifier to
+mail out the diffs.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>To start dubbing your commits with gitdub, you only need a machine with a
+public IP address that can receive inbound TCP connections. In a nutshell,
+setting up gitdub involves <a href="https://help.github.com/articles/post-receive-hooks">configuring a
+webhook</a> for your
+github repository creating a YAML configuration file. The example below shows a
+brief configuration file, a <a href="https://github.com/mavam/gitdub/blob/master/config.yml.example">more detailed, commented
+version</a> exist
+in the repository.</p>
+
+<pre><code class="language-yaml">gitdub:&#x000A;  bind: 0.0.0.0&#x000A;  port: 8888&#x000A;  allowed_sources: [207.97.227.253, 50.57.128.197, 108.171.174.178]&#x000A;&#x000A;notifier:&#x000A;  from: gitdub&#x000A;  to: [user1@host.com, user2@host.com]&#x000A;&#x000A;github:&#x000A;  - id: mavam/gitdub&#x000A;    to: [vallentin@icir.org]&#x000A;    subject: '[git/gitdub]'&#x000A;  - id: mavam/.*&#x000A;    to: [vallentin@icir.org]&#x000A;</code></pre>
+
+<p>The last block <code>github</code> contains information about your github repositories.
+Gitdub processes the blocks sequentially and tries to match the <code>id</code> field
+against the data from the commit, where the first match “wins.” In the above
+example, there exists an entry for <code>mavam/gitdub</code> and then a wildcard entry for
+all commits of user <code>mavam</code>. In each entry, you can overload settings from the
+<code>notifier</code> block. For a complete example, please refer to the <a href="https://github.com/mavam/gitdub">gitdub
+README</a>.</p>
+
+<h2 id="example">Example</h2>
+
+<p>An exemplary email from git-notifier looks like this:</p>
+
+<pre><code class="language-none">Repository : ssh://git@bro-ids.icir.org/bro&#x000A;&#x000A;On branch  : topic/matthias/opaque&#x000A;Link       : http://tracker.bro-ids.org/bro/changeset/483cc6bd9eebb4883b5784f39325253581e9cb30/bro&#x000A;&#x000A;&gt;---------------------------------------------------------------&#x000A;&#x000A;commit 483cc6bd9eebb4883b5784f39325253581e9cb30&#x000A;Author: Matthias Vallentin &lt;vallentin@icir.org&gt;&#x000A;Date:   Thu Dec 13 17:51:42 2012 -0800&#x000A;&#x000A;    Fix a hard-to-spot bug.&#x000A;&#x000A;&#x000A;&gt;---------------------------------------------------------------&#x000A;&#x000A;483cc6bd9eebb4883b5784f39325253581e9cb30&#x000A; src/Type.cc |    2 +-&#x000A; 1 files changed, 1 insertions(+), 1 deletions(-)&#x000A;&#x000A;diff --git a/src/Type.cc b/src/Type.cc&#x000A;index 30ff3ce..a78da7f 100644&#x000A;--- a/src/Type.cc&#x000A;+++ b/src/Type.cc&#x000A;@@ -1294,7 +1294,7 @@ bool OpaqueType::DoUnserialize(UnserialInfo* info)&#x000A;        {&#x000A;        DO_UNSERIALIZE(BroType);&#x000A;        char const* n;&#x000A;-       if ( ! UNSERIALIZE_STR(&amp;n, 0) );&#x000A;+       if ( ! UNSERIALIZE_STR(&amp;n, 0) )&#x000A;          return false;&#x000A;        name = n;&#x000A;        return true;&#x000A;</code></pre>
+
+<p>Gitdub code comes with a BSD-style license. I much appreciate feature requests,
+bug reports, or any other form of feedback. Happy project tracking!</p>
+
+
+<div class='separator-center margin-bottom-2'></div>
+<a class='button expanded hollow radius' href='#' id='show-comments' onclick='disqus();'>
+Load Comments
+</a>
+<div id='disqus_thread'>
+<script>
+  var disqus_shortname = 'mavam';
+  var disqus_config = function () {
+    this.page.url = 'http://matthias.vallentin.net/blog/2012/12/18/github-commit-emails-with-full-diff-of-changes/';
+    this.page.identifier = '';
+  };
+  var disqus_loaded = false;
+  function disqus() {
+    if (!disqus_loaded){
+      disqus_loaded = true;
+      var d = document, s = d.createElement('script');
+      s.src = '//' + disqus_shortname +'.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+      // Hide the button after loading comments.
+      d.getElementById('show-comments').style.display = 'none';
+      return false;
+    }
+  };
+</script>
+</div>
+
+
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class='grid-x grid-padding-x'>
+<div class='cell shrink show-for-medium'>
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+<div class='cell auto'>
+<ul class='menu vertical medium-horizontal'>
+<li>
+<a href='/#home'>
+Home
+</a>
+</li>
+<li>
+<a href='/#bio'>
+Bio
+</a>
+</li>
+<li>
+<a href='/#research'>
+Research
+</a>
+</li>
+<li>
+<a href='/#presentations'>
+Presentations
+</a>
+</li>
+<li>
+<a href='/#coursework'>
+Course Work
+</a>
+</li>
+<li>
+<a href='/#projects'>
+Projects
+</a>
+</li>
+<li>
+<a href='/#teaching'>
+Teaching
+</a>
+</li>
+<li>
+<a href='/#blog'>
+Blog
+</a>
+</li>
+</ul>
+</div>
+<div class='cell shrink show-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+<div class='hide-for-medium'>
+<ul class='menu social'>
+<li>
+<a href='mailto:matthias@berkeley.edu'>
+<i class='fa fa-envelope'></i>
+</a>
+</li>
+<li>
+<a href='https://www.linkedin.com/in/matthias-vallentin/'>
+<i class='fa fa-linkedin'></i>
+</a>
+</li>
+<li>
+<a href='https://github.com/mavam'>
+<i class='fa fa-github'></i>
+</a>
+</li>
+</ul>
+
+<div class='copyright'>
+<i class='fa fa-copyright'></i>
+2007-2018 Matthias Vallentin
+</div>
+
+</div>
+
+</footer>
+<!-- Enable Foundation -->
+<script>
+  $(document).foundation();
+</script>
+
+</body>
+</html>
