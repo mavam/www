@@ -85,7 +85,7 @@ passthrough '/robots.txt'
 # -- default rules -----------------------------------------------------------
 
 compile "/**/*.{haml,md}" do
-  filters = @item.identifier.exts.map { |e| e == 'md' ? :kramdown : e.to_sym }
+  filters = item.identifier.exts.map { |e| e == 'md' ? :kramdown : e.to_sym }
   filters.each { |f| filter(f, FILTER_OPTIONS[f] || {}) }
   layout "/partials/article.*" if item.identifier =~ '/blog/**/*'
   layout "/default.*"
