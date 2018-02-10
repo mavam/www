@@ -103,11 +103,11 @@ route "/index.*" do
 end
 
 route %r[/blog/(\d+)-(\d+)-(\d+)-(.+)/index.*] do |y, m, d, slug|
-  "/blog/#{y}/#{m}/#{d}/#{slug}/index.html"
+  "/blog/#{y}/#{m}/#{slug}/index.html"
 end
 
 route %r[/blog/(\d+)-(\d+)-(\d+)-(.+)/.*] do |y, m, d, slug|
-  "/blog/#{y}/#{m}/#{d}/#{slug}/" + item.identifier.components[-1]
+  "/blog/#{y}/#{m}/#{slug}/" + item.identifier.components[-1]
 end
 
 route "/**/*.{haml,html,md}" do
